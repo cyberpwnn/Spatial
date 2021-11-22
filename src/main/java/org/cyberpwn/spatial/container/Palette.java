@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ public interface Palette<T> {
     int size();
 
     default int bits() {
-        return DataContainer.bits(size()+1);
+        return DataContainer.bits(size() + 1);
     }
 
     void iterate(Consume.Two<T, Integer> c);
@@ -44,14 +44,14 @@ public interface Palette<T> {
         iterate((a, b) -> {
             try {
                 c.accept(a, b);
-            } catch (IOException e) {
+            } catch(IOException e) {
                 e.printStackTrace();
             }
         });
     }
 
     default Palette<T> from(int size, NodeWritable<T> writable, DataInputStream in) throws IOException {
-        for (int i = 0; i < size; i++) {
+        for(int i = 0; i < size; i++) {
             add(writable.readNodeData(in));
         }
 

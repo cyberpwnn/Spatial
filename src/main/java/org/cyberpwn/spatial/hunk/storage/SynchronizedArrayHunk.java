@@ -1,5 +1,5 @@
 /*
- * Amulet is an extension api for Java
+ * Spatial is a spatial api for Java...
  * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,14 +38,14 @@ public class SynchronizedArrayHunk<T> extends StorageHunk<T> implements Hunk<T> 
 
     @Override
     public void setRaw(int x, int y, int z, T t) {
-        synchronized (data) {
+        synchronized(data) {
             data[index(x, y, z)] = t;
         }
     }
 
     @Override
     public T getRaw(int x, int y, int z) {
-        synchronized (data) {
+        synchronized(data) {
             return data[index(x, y, z)];
         }
     }
@@ -56,7 +56,7 @@ public class SynchronizedArrayHunk<T> extends StorageHunk<T> implements Hunk<T> 
 
     @Override
     public void fill(T t) {
-        synchronized (data) {
+        synchronized(data) {
             Arrays.fill(data, t);
         }
     }

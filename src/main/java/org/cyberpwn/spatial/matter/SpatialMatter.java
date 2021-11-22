@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 package org.cyberpwn.spatial.matter;
 
 import lombok.Getter;
-import org.cyberpwn.spatial.container.Palette;
 import org.cyberpwn.spatial.matter.slices.BooleanMatter;
 import org.cyberpwn.spatial.matter.slices.ByteMatter;
 import org.cyberpwn.spatial.matter.slices.DoubleMatter;
@@ -51,8 +50,7 @@ public class SpatialMatter implements Matter {
     private final Map<Class<?>, MatterSlice<?>> sliceMap;
 
     public SpatialMatter(int width, int height, int depth) {
-        if(width < 1 || height < 1 || depth < 1)
-        {
+        if(width < 1 || height < 1 || depth < 1) {
             throw new RuntimeException("Invalid Matter Size " + width + "x" + height + "x" + depth);
         }
 
@@ -63,13 +61,11 @@ public class SpatialMatter implements Matter {
         this.sliceMap = new HashMap<>();
     }
 
-    public static void registerSliceType(MatterSlice<?> s)
-    {
+    public static void registerSliceType(MatterSlice<?> s) {
         registerSliceType(s.getType(), s);
     }
 
-    private static void registerSliceType(Class<?> type, MatterSlice<?> s)
-    {
+    private static void registerSliceType(Class<?> type, MatterSlice<?> s) {
         slicers.put(type, s);
     }
 
@@ -77,21 +73,20 @@ public class SpatialMatter implements Matter {
     public <T> MatterSlice<T> createSlice(Class<T> type, Matter m) {
         MatterSlice<?> slice = slicers.get(getClass(type));
 
-        if (slice == null) {
+        if(slice == null) {
             return null;
         }
 
         try {
             return slice.getClass().getConstructor(int.class, int.class, int.class).newInstance(getWidth(), getHeight(), getDepth());
-        } catch (Throwable e) {
+        } catch(Throwable e) {
             e.printStackTrace();
         }
 
         return null;
     }
 
-    static
-    {
+    static {
         registerSliceType(new DoubleMatter());
         registerSliceType(new ByteMatter());
         registerSliceType(new FloatMatter());

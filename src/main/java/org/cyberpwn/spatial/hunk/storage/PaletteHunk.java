@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,11 +52,11 @@ public class PaletteHunk<T> extends StorageHunk<T> implements Hunk<T> {
 
     @Override
     public synchronized Hunk<T> iterateSync(Consume.Four<Integer, Integer, Integer, T> c) {
-        for (int i = 0; i < getWidth(); i++) {
-            for (int j = 0; j < getHeight(); j++) {
-                for (int k = 0; k < getDepth(); k++) {
+        for(int i = 0; i < getWidth(); i++) {
+            for(int j = 0; j < getHeight(); j++) {
+                for(int k = 0; k < getDepth(); k++) {
                     T t = getRaw(i, j, k);
-                    if (t != null) {
+                    if(t != null) {
                         c.accept(i, j, k, t);
                     }
                 }
@@ -67,11 +67,11 @@ public class PaletteHunk<T> extends StorageHunk<T> implements Hunk<T> {
 
     @Override
     public synchronized Hunk<T> iterateSyncIO(Consume.FourIO<Integer, Integer, Integer, T> c) throws IOException {
-        for (int i = 0; i < getWidth(); i++) {
-            for (int j = 0; j < getHeight(); j++) {
-                for (int k = 0; k < getDepth(); k++) {
+        for(int i = 0; i < getWidth(); i++) {
+            for(int j = 0; j < getHeight(); j++) {
+                for(int k = 0; k < getDepth(); k++) {
                     T t = getRaw(i, j, k);
-                    if (t != null) {
+                    if(t != null) {
                         c.accept(i, j, k, t);
                     }
                 }

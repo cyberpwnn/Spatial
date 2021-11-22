@@ -3,8 +3,6 @@ import org.cyberpwn.spatial.container.NodeWritable;
 import org.cyberpwn.spatial.mantle.Mantle;
 import org.cyberpwn.spatial.matter.Matter;
 import org.cyberpwn.spatial.matter.SpatialMatter;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.DataInputStream;
@@ -32,8 +30,7 @@ public class LazyMansBareMinimumSanityCheck {
         mantle.close();
 
         // Cleanup
-        for(File i : tests.listFiles())
-        {
+        for(File i : tests.listFiles()) {
             i.delete();
         }
 
@@ -45,15 +42,14 @@ public class LazyMansBareMinimumSanityCheck {
         SpatialMatter.registerSliceType(new CustomDataMatter());
         File tests = new File("mantle-tests");
         Mantle mantle = new Mantle(tests, 256);
-        mantle.set(0,0,0, new CustomData(4));
+        mantle.set(0, 0, 0, new CustomData(4));
         mantle.close();
         mantle = new Mantle(tests, 256);
-        assertEquals(4, mantle.get(0,0,0, CustomData.class).getF());
+        assertEquals(4, mantle.get(0, 0, 0, CustomData.class).getF());
         mantle.close();
 
         // Cleanup
-        for(File i : tests.listFiles())
-        {
+        for(File i : tests.listFiles()) {
             i.delete();
         }
 
@@ -68,7 +64,7 @@ public class LazyMansBareMinimumSanityCheck {
         matter.slice(Integer.class).set(3, 2, 3, 42);
         byte[] data = matter.write();
         Matter m = Matter.read(data);
-        assertEquals(69, m.slice(int.class).get(0,0,0));
+        assertEquals(69, m.slice(int.class).get(0, 0, 0));
         assertEquals(1337, m.slice(Integer.class).get(1, 2, 0));
         assertEquals(42, m.slice(int.class).get(3, 2, 3));
     }

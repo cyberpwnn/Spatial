@@ -1,5 +1,5 @@
 /*
- * Amulet is an extension api for Java
+ * Spatial is a spatial api for Java...
  * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@ public class WriteTrackHunk<T> implements Hunk<T> {
 
     @Override
     public void setRaw(int x, int y, int z, T t) {
-        if (!b.get()) {
+        if(!b.get()) {
             b.set(true);
         }
 

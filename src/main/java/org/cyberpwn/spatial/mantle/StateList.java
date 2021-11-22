@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ public class StateList {
     public StateList(String... states) {
         this.states = new ArrayList<>(List.of(states));
 
-        if (getBits() > 64) {
+        if(getBits() > 64) {
             throw new RuntimeException("StateLists cannot exceed 64 bits! You are trying to use " + getBits() + " bits!");
         }
     }
@@ -36,7 +36,7 @@ public class StateList {
     public StateList(Enum<?>... states) {
         this.states = new ArrayList<>(List.of(states)).stream().map(Enum::name).collect(Collectors.toList());
 
-        if (getBits() > 64) {
+        if(getBits() > 64) {
             throw new RuntimeException("StateLists cannot exceed 64 bits! You are trying to use " + getBits() + " bits!");
         }
     }
@@ -48,8 +48,8 @@ public class StateList {
     public List<String> getEnabled(long list) {
         List<String> f = new ArrayList<>();
 
-        for (String i : states) {
-            if (is(list, i)) {
+        for(String i : states) {
+            if(is(list, i)) {
                 f.add(i);
             }
         }
@@ -60,7 +60,7 @@ public class StateList {
     public long of(String... enabledStates) {
         long b = 0;
 
-        for (String i : enabledStates) {
+        for(String i : enabledStates) {
             b |= getBit(i);
         }
 
@@ -71,9 +71,9 @@ public class StateList {
         long bit = getBit(state);
         boolean is = is(list, state);
 
-        if (enabled && !is) {
+        if(enabled && !is) {
             return list | bit;
-        } else if (!enabled && is) {
+        } else if(!enabled && is) {
             return list ^ bit;
         }
 

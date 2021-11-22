@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,9 @@ import java.io.IOException;
 public interface MatterSlice<T> extends Hunk<T>, PaletteType<T>, NodeWritable<T> {
     Class<T> getType();
 
-    Palette<T> getGlobalPalette();
+    default Palette<T> getGlobalPalette() {
+        return null;
+    }
 
     @Override
     default void writePaletteNode(DataOutputStream dos, T s) throws IOException {
@@ -85,7 +87,7 @@ public interface MatterSlice<T> extends Hunk<T>, PaletteType<T>, NodeWritable<T>
     default <W> boolean writeInto(W w, int x, int y, int z) {
         MatterWriter<W, T> injector = (MatterWriter<W, T>) writeInto(getClass(w));
 
-        if (injector == null) {
+        if(injector == null) {
             return false;
         }
 
@@ -97,16 +99,16 @@ public interface MatterSlice<T> extends Hunk<T>, PaletteType<T>, NodeWritable<T>
     default <W> boolean readFrom(W w, int x, int y, int z) {
         MatterReader<W, T> ejector = (MatterReader<W, T>) readFrom(getClass(w));
 
-        if (ejector == null) {
+        if(ejector == null) {
             return false;
         }
 
-        for (int i = x; i < x + getWidth(); i++) {
-            for (int j = y; j < y + getHeight(); j++) {
-                for (int k = z; k < z + getDepth(); k++) {
+        for(int i = x; i < x + getWidth(); i++) {
+            for(int j = y; j < y + getHeight(); j++) {
+                for(int k = z; k < z + getDepth(); k++) {
                     T v = ejector.readMatter(w, i, j, k);
 
-                    if (v != null) {
+                    if(v != null) {
                         set(i - x, j - y, k - z, v);
                     }
                 }
@@ -126,8 +128,8 @@ public interface MatterSlice<T> extends Hunk<T>, PaletteType<T>, NodeWritable<T>
 
     default int getBitsPer(int needed) {
         int target = 1;
-        for (int i = 1; i < 8; i++) {
-            if (Math.pow(2, i) > needed) {
+        for(int i = 1; i < 8; i++) {
+            if(Math.pow(2, i) > needed) {
                 target = i;
                 break;
             }
@@ -139,7 +141,7 @@ public interface MatterSlice<T> extends Hunk<T>, PaletteType<T>, NodeWritable<T>
     default void write(DataOutputStream dos) throws IOException {
         dos.writeUTF(getType().getCanonicalName());
 
-        if ((this instanceof PaletteOrHunk f && f.isPalette())) {
+        if((this instanceof PaletteOrHunk f && f.isPalette())) {
             f.palette().writeDos(dos);
             return;
         }
@@ -151,7 +153,7 @@ public interface MatterSlice<T> extends Hunk<T>, PaletteType<T>, NodeWritable<T>
         palette.writePalette(dos);
         dos.writeBoolean(isMapped());
 
-        if (isMapped()) {
+        if(isMapped()) {
             Varint.writeUnsignedVarInt(getEntryCount(), dos);
             iterateSyncIO((x, y, z, b) -> {
                 Varint.writeUnsignedVarInt(CompressedNumbers.index3Dto1D(x, y, z, w, h), dos);
@@ -163,7 +165,7 @@ public interface MatterSlice<T> extends Hunk<T>, PaletteType<T>, NodeWritable<T>
     }
 
     default void read(DataInputStream din) throws IOException {
-        if ((this instanceof PaletteOrHunk f && f.isPalette())) {
+        if((this instanceof PaletteOrHunk f && f.isPalette())) {
             f.setPalette(new DataContainer<>(din, this));
             return;
         }
@@ -171,11 +173,11 @@ public interface MatterSlice<T> extends Hunk<T>, PaletteType<T>, NodeWritable<T>
         int w = getWidth();
         int h = getHeight();
         MatterPalette<T> palette = new MatterPalette<T>(this, din);
-        if (din.readBoolean()) {
+        if(din.readBoolean()) {
             int nodes = Varint.readUnsignedVarInt(din);
             int[] pos;
 
-            while (nodes-- > 0) {
+            while(nodes-- > 0) {
                 pos = CompressedNumbers.index1Dto3D(Varint.readUnsignedVarInt(din), w, h);
                 setRaw(pos[0], pos[1], pos[2], palette.readNode(din));
             }

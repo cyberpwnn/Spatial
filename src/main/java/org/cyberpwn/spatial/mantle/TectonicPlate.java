@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,7 @@
 
 package org.cyberpwn.spatial.mantle;
 
-import com.google.common.cache.Cache;
 import lombok.Getter;
-import org.checkerframework.checker.units.qual.C;
 import org.cyberpwn.spatial.util.CompressedNumbers;
 
 import java.io.DataInputStream;
@@ -50,7 +48,8 @@ public class TectonicPlate {
     /**
      * Create a new tectonic plate
      *
-     * @param worldHeight the height of the world
+     * @param worldHeight
+     *     the height of the world
      */
     public TectonicPlate(int worldHeight, int x, int z) {
         this.sectionHeight = worldHeight >> 4;
@@ -62,15 +61,19 @@ public class TectonicPlate {
     /**
      * Load a tectonic plate from a data stream
      *
-     * @param worldHeight the height of the world
-     * @param din         the data input
-     * @throws IOException            shit happens yo
-     * @throws ClassNotFoundException real shit bro
+     * @param worldHeight
+     *     the height of the world
+     * @param din
+     *     the data input
+     * @throws IOException
+     *     shit happens yo
+     * @throws ClassNotFoundException
+     *     real shit bro
      */
     public TectonicPlate(int worldHeight, DataInputStream din) throws IOException, ClassNotFoundException {
         this(worldHeight, din.readInt(), din.readInt());
-        for (int i = 0; i < chunks.length(); i++) {
-            if (din.readBoolean()) {
+        for(int i = 0; i < chunks.length(); i++) {
+            if(din.readBoolean()) {
                 chunks.set(i, new MantleChunk(sectionHeight, din));
             }
         }
@@ -89,8 +92,10 @@ public class TectonicPlate {
     /**
      * Check if a chunk exists in this plate or not (same as get(x, z) != null)
      *
-     * @param x the chunk relative x (0-31)
-     * @param z the chunk relative z (0-31)
+     * @param x
+     *     the chunk relative x (0-31)
+     * @param z
+     *     the chunk relative z (0-31)
      * @return true if the chunk exists
      */
     public boolean exists(int x, int z) {
@@ -100,8 +105,10 @@ public class TectonicPlate {
     /**
      * Get a chunk at the given coordinates or null if it doesnt exist
      *
-     * @param x the chunk relative x (0-31)
-     * @param z the chunk relative z (0-31)
+     * @param x
+     *     the chunk relative x (0-31)
+     * @param z
+     *     the chunk relative z (0-31)
      * @return the chunk or null if it doesnt exist
      */
     public MantleChunk get(int x, int z) {
@@ -112,7 +119,7 @@ public class TectonicPlate {
      * Clear all chunks from this tectonic plate
      */
     public void clear() {
-        for (int i = 0; i < chunks.length(); i++) {
+        for(int i = 0; i < chunks.length(); i++) {
             chunks.set(i, null);
         }
     }
@@ -120,8 +127,10 @@ public class TectonicPlate {
     /**
      * Delete a chunk from this tectonic plate
      *
-     * @param x the chunk relative x (0-31)
-     * @param z the chunk relative z (0-31)
+     * @param x
+     *     the chunk relative x (0-31)
+     * @param z
+     *     the chunk relative z (0-31)
      */
     public void delete(int x, int z) {
         chunks.set(index(x, z), null);
@@ -130,14 +139,16 @@ public class TectonicPlate {
     /**
      * Get a tectonic plate, or create one and insert it & return it if it diddnt exist
      *
-     * @param x the chunk relative x (0-31)
-     * @param z the chunk relative z (0-31)
+     * @param x
+     *     the chunk relative x (0-31)
+     * @param z
+     *     the chunk relative z (0-31)
      * @return the chunk (read or created & inserted)
      */
     public MantleChunk getOrCreate(int x, int z) {
         MantleChunk chunk = get(x, z);
 
-        if (chunk == null) {
+        if(chunk == null) {
             chunk = new MantleChunk(sectionHeight, x & 31, z & 31);
             chunks.set(index(x, z), chunk);
         }
@@ -152,8 +163,10 @@ public class TectonicPlate {
     /**
      * Write this tectonic plate to file
      *
-     * @param file the file to writeNodeData it to
-     * @throws IOException shit happens
+     * @param file
+     *     the file to writeNodeData it to
+     * @throws IOException
+     *     shit happens
      */
     public void write(File file) throws IOException {
         FileOutputStream fos = new FileOutputStream(file);
@@ -166,17 +179,19 @@ public class TectonicPlate {
     /**
      * Write this tectonic plate to a data stream
      *
-     * @param dos the data output
-     * @throws IOException shit happens
+     * @param dos
+     *     the data output
+     * @throws IOException
+     *     shit happens
      */
     public void write(DataOutputStream dos) throws IOException {
         dos.writeInt(x);
         dos.writeInt(z);
 
-        for (int i = 0; i < chunks.length(); i++) {
+        for(int i = 0; i < chunks.length(); i++) {
             MantleChunk chunk = chunks.get(i);
 
-            if (chunk != null) {
+            if(chunk != null) {
                 dos.writeBoolean(true);
                 chunk.write(dos);
             } else {

@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class CustomDataMatter extends RawMatter<CustomData> {
     public CustomDataMatter() {
-        this(1,1,1);
+        this(1, 1, 1);
     }
 
     public CustomDataMatter(int width, int height, int depth) {

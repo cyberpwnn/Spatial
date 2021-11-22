@@ -1,5 +1,5 @@
 /*
- * Amulet is an extension api for Java
+ * Spatial is a spatial api for Java...
  * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ public abstract class StorageHunk<T> implements Hunk<T> {
     private final int depth;
 
     public StorageHunk(int width, int height, int depth) {
-        if (width <= 0 || height <= 0 || depth <= 0) {
+        if(width <= 0 || height <= 0 || depth <= 0) {
             throw new RuntimeException("Unsupported size " + width + " " + height + " " + depth);
         }
 

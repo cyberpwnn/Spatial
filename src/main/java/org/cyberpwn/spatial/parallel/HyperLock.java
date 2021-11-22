@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,10 +44,10 @@ public class HyperLock {
     public HyperLock(int capacity, boolean fair) {
         this.fair = fair;
         locks = new ConcurrentLinkedHashMap.Builder<Long, ReentrantLock>()
-                .initialCapacity(capacity)
-                .maximumWeightedCapacity(capacity)
-                .concurrencyLevel(32)
-                .build();
+            .initialCapacity(capacity)
+            .maximumWeightedCapacity(capacity)
+            .concurrencyLevel(32)
+            .build();
     }
 
     public void with(int x, int z, Runnable r) {
@@ -67,12 +67,12 @@ public class HyperLock {
         Throwable ee = null;
         try {
             r.run();
-        } catch (Throwable e) {
+        } catch(Throwable e) {
             ee = e;
         } finally {
             unlock(x, z);
 
-            if (ee != null) {
+            if(ee != null) {
                 throw ee;
             }
         }
@@ -83,12 +83,12 @@ public class HyperLock {
         IOException ee = null;
         try {
             r.run();
-        } catch (IOException e) {
+        } catch(IOException e) {
             ee = e;
         } finally {
             unlock(x, z);
 
-            if (ee != null) {
+            if(ee != null) {
                 throw ee;
             }
         }
@@ -108,7 +108,7 @@ public class HyperLock {
     public boolean tryLock(int x, int z, long timeout) {
         try {
             return getLock(x, z).tryLock(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
+        } catch(InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -120,7 +120,7 @@ public class HyperLock {
     }
 
     public void lock(int x, int z) {
-        if (!enabled) {
+        if(!enabled) {
             return;
         }
 
@@ -128,7 +128,7 @@ public class HyperLock {
     }
 
     public void unlock(int x, int z) {
-        if (!enabled) {
+        if(!enabled) {
             return;
         }
 

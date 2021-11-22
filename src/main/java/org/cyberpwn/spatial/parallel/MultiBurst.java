@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,20 +47,20 @@ public class MultiBurst {
 
     private synchronized ExecutorService getService() {
         last.set(System.currentTimeMillis());
-        if (service == null || service.isShutdown()) {
+        if(service == null || service.isShutdown()) {
             service = new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
-                    new ForkJoinPool.ForkJoinWorkerThreadFactory() {
-                        int m = 0;
+                new ForkJoinPool.ForkJoinWorkerThreadFactory() {
+                    int m = 0;
 
-                        @Override
-                        public ForkJoinWorkerThread newThread(ForkJoinPool pool) {
-                            final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
-                            worker.setPriority(priority);
-                            worker.setName(name + " " + ++m);
-                            return worker;
-                        }
-                    },
-                    (t, e) -> e.printStackTrace(), true);
+                    @Override
+                    public ForkJoinWorkerThread newThread(ForkJoinPool pool) {
+                        final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+                        worker.setPriority(priority);
+                        worker.setName(name + " " + ++m);
+                        return worker;
+                    }
+                },
+                (t, e) -> e.printStackTrace(), true);
         }
 
         return service;
@@ -71,7 +71,7 @@ public class MultiBurst {
     }
 
     public void burst(boolean multicore, Runnable... r) {
-        if (multicore) {
+        if(multicore) {
             burst(r);
         } else {
             sync(r);
@@ -83,7 +83,7 @@ public class MultiBurst {
     }
 
     public void burst(boolean multicore, List<Runnable> r) {
-        if (multicore) {
+        if(multicore) {
             burst(r);
         } else {
             sync(r);
@@ -91,13 +91,13 @@ public class MultiBurst {
     }
 
     private void sync(List<Runnable> r) {
-        for (Runnable i : new ArrayList<>(r)) {
+        for(Runnable i : new ArrayList<>(r)) {
             i.run();
         }
     }
 
     public void sync(Runnable... r) {
-        for (Runnable i : r) {
+        for(Runnable i : r) {
             i.run();
         }
     }
@@ -137,23 +137,23 @@ public class MultiBurst {
     }
 
     public void close() {
-        if (service != null) {
+        if(service != null) {
             service.shutdown();
             PrecisionStopwatch p = PrecisionStopwatch.start();
             try {
-                while (!service.awaitTermination(1, TimeUnit.SECONDS)) {
-                    if (p.getMilliseconds() > 7000) {
+                while(!service.awaitTermination(1, TimeUnit.SECONDS)) {
+                    if(p.getMilliseconds() > 7000) {
 
                         try {
                             service.shutdownNow();
-                        } catch (Throwable e) {
+                        } catch(Throwable e) {
 
                         }
 
                         break;
                     }
                 }
-            } catch (Throwable e) {
+            } catch(Throwable e) {
                 e.printStackTrace();
             }
         }

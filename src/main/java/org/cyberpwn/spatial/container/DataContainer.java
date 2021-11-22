@@ -1,6 +1,6 @@
 /*
- * Iris is a World Generator for Minecraft Bukkit Servers
- * Copyright (c) 2021 Arcane Arts (Volmit Software)
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,13 +49,11 @@ public class DataContainer<T> {
         this.palette = new AtomicReference<>(newPalette(INITIAL_BITS));
     }
 
-    public DataContainer(byte[] data, NodeWritable<T> writer) throws IOException
-    {
+    public DataContainer(byte[] data, NodeWritable<T> writer) throws IOException {
         this(new ByteArrayInputStream(data), writer);
     }
 
-    public DataContainer(InputStream in, NodeWritable<T> writer) throws IOException
-    {
+    public DataContainer(InputStream in, NodeWritable<T> writer) throws IOException {
         this(new DataInputStream(in), writer);
     }
 
@@ -67,8 +65,7 @@ public class DataContainer<T> {
         this.bits = new AtomicInteger(palette.get().bits());
     }
 
-    public static String readBitString(DataInputStream din) throws IOException
-    {
+    public static String readBitString(DataInputStream din) throws IOException {
         DataContainer<Character> c = new DataContainer<>(din, new NodeWritable<Character>() {
             @Override
             public Character readNodeData(DataInputStream din) throws IOException {
@@ -83,8 +80,7 @@ public class DataContainer<T> {
 
         StringBuilder sb = new StringBuilder();
 
-        for(int i = c.size()-1; i >= 0; i--)
-        {
+        for(int i = c.size() - 1; i >= 0; i--) {
             sb.setCharAt(i, c.get(i));
         }
 
@@ -104,27 +100,24 @@ public class DataContainer<T> {
             }
         }, s.length());
 
-        for(int i = 0; i < s.length(); i++)
-        {
+        for(int i = 0; i < s.length(); i++) {
             c.set(i, s.charAt(i));
         }
 
         c.writeDos(dos);
     }
 
-    public DataBits getData()
-    {
+    public DataBits getData() {
         return data.get();
     }
 
-    public Palette<T> getPalette()
-    {
+    public Palette<T> getPalette() {
         return palette.get();
     }
 
     public String toString() {
         return "DataContainer <" + length + " x " + bits + " bits> -> Palette<" + palette.get().getClass().getSimpleName().replaceAll("\\QPalette\\E", "") + ">: " + palette.get().size() +
-                " " + data.get().toString() + " PalBit: " + palette.get().bits();
+            " " + data.get().toString() + " PalBit: " + palette.get().bits();
     }
 
     public byte[] write() throws IOException {
@@ -147,13 +140,13 @@ public class DataContainer<T> {
 
     private Palette<T> newPalette(DataInputStream din) throws IOException {
         int paletteSize = Varint.readUnsignedVarInt(din);
-        Palette<T> d = newPalette(bits(paletteSize+1));
+        Palette<T> d = newPalette(bits(paletteSize + 1));
         d.from(paletteSize, writer, din);
         return d;
     }
 
     private Palette<T> newPalette(int bits) {
-        if (bits <= LINEAR_BITS_LIMIT) {
+        if(bits <= LINEAR_BITS_LIMIT) {
             return new LinearPalette<>(LINEAR_INITIAL_LENGTH);
         }
 
@@ -161,17 +154,16 @@ public class DataContainer<T> {
     }
 
     public void ensurePaletted(T t) {
-        if (palette.get().id(t) == -1) {
+        if(palette.get().id(t) == -1) {
             expandOne();
         }
     }
 
     public void set(int position, T t) {
-        synchronized (this)
-        {
+        synchronized(this) {
             int id = palette.get().id(t);
 
-            if (id == -1) {
+            if(id == -1) {
                 expandOne();
                 id = palette.get().add(t);
             }
@@ -181,17 +173,16 @@ public class DataContainer<T> {
     }
 
     private void expandOne() {
-        if (palette.get().size() + 1 >= BIT[bits.get()]) {
+        if(palette.get().size() + 1 >= BIT[bits.get()]) {
             setBits(bits.get() + 1);
         }
     }
 
     public T get(int position) {
-        synchronized (this)
-        {
+        synchronized(this) {
             int id = data.get().get(position) + 1;
 
-            if (id <= 0) {
+            if(id <= 0) {
                 return null;
             }
 
@@ -200,8 +191,8 @@ public class DataContainer<T> {
     }
 
     public void setBits(int bits) {
-        if (this.bits.get() != bits) {
-            if (this.bits.get() <= LINEAR_BITS_LIMIT != bits <= LINEAR_BITS_LIMIT) {
+        if(this.bits.get() != bits) {
+            if(this.bits.get() <= LINEAR_BITS_LIMIT != bits <= LINEAR_BITS_LIMIT) {
                 palette.set(newPalette(bits).from(palette.get()));
             }
 
@@ -213,7 +204,7 @@ public class DataContainer<T> {
     private static int[] computeBitLimits() {
         int[] m = new int[16];
 
-        for (int i = 0; i < m.length; i++) {
+        for(int i = 0; i < m.length; i++) {
             m[i] = (int) Math.pow(2, i);
         }
 
@@ -221,12 +212,12 @@ public class DataContainer<T> {
     }
 
     protected static int bits(int size) {
-        if (DataContainer.BIT[INITIAL_BITS] >= size) {
+        if(DataContainer.BIT[INITIAL_BITS] >= size) {
             return INITIAL_BITS;
         }
 
-        for (int i = 0; i < DataContainer.BIT.length; i++) {
-            if (DataContainer.BIT[i] >= size) {
+        for(int i = 0; i < DataContainer.BIT.length; i++) {
+            if(DataContainer.BIT[i] >= size) {
                 return i;
             }
         }

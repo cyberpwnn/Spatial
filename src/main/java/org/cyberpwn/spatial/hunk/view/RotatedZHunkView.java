@@ -1,5 +1,5 @@
 /*
- * Amulet is an extension api for Java
+ * Spatial is a spatial api for Java...
  * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,8 +44,8 @@ public class RotatedZHunkView<T> implements Hunk<T> {
         int xc = (int) Math.round(cos * (getWidth() / 2f) - sin * (getHeight() / 2f));
         int yc = (int) Math.round(sin * (getWidth() / 2f) + cos * (getHeight() / 2f));
         return src.getIfExists((int) Math.round(cos * (x - xc) - sin * (y - yc)) - xc,
-                (int) Math.round(sin * (x - xc) + cos * (y - yc)) - yc
-                , z);
+            (int) Math.round(sin * (x - xc) + cos * (y - yc)) - yc
+            , z);
     }
 
     @Override

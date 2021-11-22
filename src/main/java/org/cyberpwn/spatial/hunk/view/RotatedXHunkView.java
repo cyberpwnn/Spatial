@@ -1,5 +1,5 @@
 /*
- * Amulet is an extension api for Java
+ * Spatial is a spatial api for Java...
  * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,9 +36,9 @@ public class RotatedXHunkView<T> implements Hunk<T> {
         int yc = (int) Math.round(cos * (getHeight() / 2f) - sin * (getDepth() / 2f));
         int zc = (int) Math.round(sin * (getHeight() / 2f) + cos * (getDepth() / 2f));
         src.setIfExists(x,
-                (int) Math.round(cos * (y - yc) - sin * (z - zc)) - yc,
-                (int) Math.round(sin * y - yc + cos * (z - zc)) - zc,
-                t);
+            (int) Math.round(cos * (y - yc) - sin * (z - zc)) - yc,
+            (int) Math.round(sin * y - yc + cos * (z - zc)) - zc,
+            t);
     }
 
     @Override
@@ -46,8 +46,8 @@ public class RotatedXHunkView<T> implements Hunk<T> {
         int yc = (int) Math.round(cos * (getHeight() / 2f) - sin * (getDepth() / 2f));
         int zc = (int) Math.round(sin * (getHeight() / 2f) + cos * (getDepth() / 2f));
         return src.getIfExists(x,
-                (int) Math.round(cos * (y - yc) - sin * (z - zc)) - yc,
-                (int) Math.round(sin * y - yc + cos * (z - zc)) - zc
+            (int) Math.round(cos * (y - yc) - sin * (z - zc)) - yc,
+            (int) Math.round(sin * y - yc + cos * (z - zc)) - zc
         );
     }
 

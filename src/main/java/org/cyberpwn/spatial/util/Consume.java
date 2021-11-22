@@ -1,5 +1,5 @@
 /*
- * Amulet is an extension api for Java
+ * Spatial is a spatial api for Java...
  * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,61 +19,60 @@
 package org.cyberpwn.spatial.util;
 
 import java.io.IOException;
-import java.util.function.DoubleConsumer;
 
 public class Consume {
     @FunctionalInterface
-    public static interface One<T0> {
+    public interface One<T0> {
         void accept(T0 t0);
     }
 
     @FunctionalInterface
-    public static interface Any<T0> {
+    public interface Any<T0> {
         void accept(T0... t0);
     }
 
     @FunctionalInterface
-    public static interface Two<T0, T1> {
+    public interface Two<T0, T1> {
         void accept(T0 t0, T1 t1);
     }
 
     @FunctionalInterface
-    public static interface TwoIO<T0, T1> {
+    public interface TwoIO<T0, T1> {
         void accept(T0 t0, T1 t1) throws IOException;
     }
 
     @FunctionalInterface
-    public static interface Three<T0, T1, T2> {
+    public interface Three<T0, T1, T2> {
         void accept(T0 t0, T1 t1, T2 t2);
     }
 
     @FunctionalInterface
-    public static interface Four<T0, T1, T2, T3> {
+    public interface Four<T0, T1, T2, T3> {
         void accept(T0 t0, T1 t1, T2 t2, T3 t3);
     }
 
     @FunctionalInterface
-    public static interface FourIO<T0, T1, T2, T3> {
-        public void accept(T0 t0, T1 t1, T2 t2, T3 t3) throws IOException;
+    public interface FourIO<T0, T1, T2, T3> {
+        void accept(T0 t0, T1 t1, T2 t2, T3 t3) throws IOException;
     }
 
     @FunctionalInterface
-    public static interface Five<T0, T1, T2, T3, T4> {
-        public void accept(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4);
+    public interface Five<T0, T1, T2, T3, T4> {
+        void accept(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4);
     }
 
     @FunctionalInterface
-    public static interface Six<T0, T1, T2, T3, T4, T5> {
-        public void accept(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5);
+    public interface Six<T0, T1, T2, T3, T4, T5> {
+        void accept(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5);
     }
 
     @FunctionalInterface
-    public static interface Seven<T0, T1, T2, T3, T4, T5, T6> {
-        public void accept(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6);
+    public interface Seven<T0, T1, T2, T3, T4, T5, T6> {
+        void accept(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6);
     }
 
     @FunctionalInterface
-    public static interface Eight<T0, T1, T2, T3, T4, T5, T6, T7> {
-        public void accept(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7);
+    public interface Eight<T0, T1, T2, T3, T4, T5, T6, T7> {
+        void accept(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7);
     }
 }

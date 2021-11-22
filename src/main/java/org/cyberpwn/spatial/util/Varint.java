@@ -1,5 +1,23 @@
 
 
+/*
+ * Spatial is a spatial api for Java...
+ * Copyright (c) 2021 Arcane Arts
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.cyberpwn.spatial.util;
 
 import java.io.DataInput;
@@ -28,9 +46,12 @@ public final class Varint {
      * encode signed values. If values are known to be nonnegative,
      * {@link #writeUnsignedVarLong(long, DataOutput)} should be used.
      *
-     * @param value value to encode
-     * @param out   to writeNodeData bytes to
-     * @throws IOException if {@link DataOutput} throws {@link IOException}
+     * @param value
+     *     value to encode
+     * @param out
+     *     to writeNodeData bytes to
+     * @throws IOException
+     *     if {@link DataOutput} throws {@link IOException}
      */
     public static void writeSignedVarLong(long value, DataOutput out) throws IOException {
         // Great trick from http://code.google.com/apis/protocolbuffers/docs/encoding.html#types
@@ -44,12 +65,15 @@ public final class Varint {
      * If values can be negative, use {@link #writeSignedVarLong(long, DataOutput)}
      * instead. This method treats negative input as like a large unsigned value.
      *
-     * @param value value to encode
-     * @param out   to writeNodeData bytes to
-     * @throws IOException if {@link DataOutput} throws {@link IOException}
+     * @param value
+     *     value to encode
+     * @param out
+     *     to writeNodeData bytes to
+     * @throws IOException
+     *     if {@link DataOutput} throws {@link IOException}
      */
     public static void writeUnsignedVarLong(long value, DataOutput out) throws IOException {
-        while ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+        while((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
             out.writeByte(((int) value & 0x7F) | 0x80);
             value >>>= 7;
         }
@@ -68,7 +92,7 @@ public final class Varint {
      * @see #writeUnsignedVarLong(long, DataOutput)
      */
     public static void writeUnsignedVarInt(int value, DataOutput out) throws IOException {
-        while ((value & 0xFFFFFF80) != 0L) {
+        while((value & 0xFFFFFF80) != 0L) {
             out.writeByte((value & 0x7F) | 0x80);
             value >>>= 7;
         }
@@ -89,24 +113,27 @@ public final class Varint {
     public static byte[] writeUnsignedVarInt(int value) {
         byte[] byteArrayList = new byte[10];
         int i = 0;
-        while ((value & 0xFFFFFF80) != 0L) {
+        while((value & 0xFFFFFF80) != 0L) {
             byteArrayList[i++] = ((byte) ((value & 0x7F) | 0x80));
             value >>>= 7;
         }
         byteArrayList[i] = ((byte) (value & 0x7F));
         byte[] out = new byte[i + 1];
-        for (; i >= 0; i--) {
+        for(; i >= 0; i--) {
             out[i] = byteArrayList[i];
         }
         return out;
     }
 
     /**
-     * @param in to read bytes from
+     * @param in
+     *     to read bytes from
      * @return decode value
-     * @throws IOException              if {@link DataInput} throws {@link IOException}
-     * @throws IllegalArgumentException if variable-length value does not terminate
-     *                                  after 9 bytes have been read
+     * @throws IOException
+     *     if {@link DataInput} throws {@link IOException}
+     * @throws IllegalArgumentException
+     *     if variable-length value does not terminate
+     *     after 9 bytes have been read
      * @see #writeSignedVarLong(long, DataOutput)
      */
     public static long readSignedVarLong(DataInput in) throws IOException {
@@ -120,21 +147,24 @@ public final class Varint {
     }
 
     /**
-     * @param in to read bytes from
+     * @param in
+     *     to read bytes from
      * @return decode value
-     * @throws IOException              if {@link DataInput} throws {@link IOException}
-     * @throws IllegalArgumentException if variable-length value does not terminate
-     *                                  after 9 bytes have been read
+     * @throws IOException
+     *     if {@link DataInput} throws {@link IOException}
+     * @throws IllegalArgumentException
+     *     if variable-length value does not terminate
+     *     after 9 bytes have been read
      * @see #writeUnsignedVarLong(long, DataOutput)
      */
     public static long readUnsignedVarLong(DataInput in) throws IOException {
         long value = 0L;
         int i = 0;
         long b;
-        while (((b = in.readByte()) & 0x80L) != 0) {
+        while(((b = in.readByte()) & 0x80L) != 0) {
             value |= (b & 0x7F) << i;
             i += 7;
-            if (i > 63) {
+            if(i > 63) {
                 throw new IllegalArgumentException("Variable length quantity is too long");
             }
         }
@@ -142,9 +172,11 @@ public final class Varint {
     }
 
     /**
-     * @throws IllegalArgumentException if variable-length value does not terminate
-     *                                  after 5 bytes have been read
-     * @throws IOException              if {@link DataInput} throws {@link IOException}
+     * @throws IllegalArgumentException
+     *     if variable-length value does not terminate
+     *     after 5 bytes have been read
+     * @throws IOException
+     *     if {@link DataInput} throws {@link IOException}
      * @see #readSignedVarLong(DataInput)
      */
     public static int readSignedVarInt(DataInput in) throws IOException {
@@ -158,19 +190,21 @@ public final class Varint {
     }
 
     /**
-     * @throws IllegalArgumentException if variable-length value does not terminate
-     *                                  after 5 bytes have been read
-     * @throws IOException              if {@link DataInput} throws {@link IOException}
+     * @throws IllegalArgumentException
+     *     if variable-length value does not terminate
+     *     after 5 bytes have been read
+     * @throws IOException
+     *     if {@link DataInput} throws {@link IOException}
      * @see #readUnsignedVarLong(DataInput)
      */
     public static int readUnsignedVarInt(DataInput in) throws IOException {
         int value = 0;
         int i = 0;
         int b;
-        while (((b = in.readByte()) & 0x80) != 0) {
+        while(((b = in.readByte()) & 0x80) != 0) {
             value |= (b & 0x7F) << i;
             i += 7;
-            if (i > 35) {
+            if(i > 35) {
                 throw new IllegalArgumentException("Variable length quantity is too long");
             }
         }
@@ -191,14 +225,14 @@ public final class Varint {
         int value = 0;
         int i = 0;
         byte rb = Byte.MIN_VALUE;
-        for (byte b : bytes) {
+        for(byte b : bytes) {
             rb = b;
-            if ((b & 0x80) == 0) {
+            if((b & 0x80) == 0) {
                 break;
             }
             value |= (b & 0x7f) << i;
             i += 7;
-            if (i > 35) {
+            if(i > 35) {
                 throw new IllegalArgumentException("Variable length quantity is too long");
             }
         }

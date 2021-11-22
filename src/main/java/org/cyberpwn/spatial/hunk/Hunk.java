@@ -1,5 +1,5 @@
 /*
- * Amulet is an extension api for Java
+ * Spatial is a spatial api for Java...
  * Copyright (c) 2021 Arcane Arts
  *
  * This program is free software: you can redistribute it and/or modify
@@ -40,8 +40,6 @@ import org.cyberpwn.spatial.util.Pos;
 import org.cyberpwn.spatial.util.Supplier3R;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -53,8 +51,10 @@ public interface Hunk<T> {
      * Create a hunk view from a source hunk. This view reads and writes through to
      * the source hunk. Its is not a copy.
      *
-     * @param <T> the type
-     * @param src the source hunk
+     * @param <T>
+     *     the type
+     * @param src
+     *     the source hunk
      * @return the hunk view
      */
     static <T> Hunk<T> view(Hunk<T> src) {
@@ -156,9 +156,12 @@ public interface Hunk<T> {
     /**
      * Creates a new bounding hunk from the given hunks
      *
-     * @param <T>     the type
-     * @param factory the factory that creates a hunk
-     * @param hunks   the hunks
+     * @param <T>
+     *     the type
+     * @param factory
+     *     the factory that creates a hunk
+     * @param hunks
+     *     the hunks
      * @return the new bounding hunk
      */
     @SafeVarargs
@@ -167,7 +170,7 @@ public interface Hunk<T> {
         int h = 0;
         int d = 0;
 
-        for (Hunk<T> i : hunks) {
+        for(Hunk<T> i : hunks) {
             w = Math.max(w, i.getWidth());
             h = Math.max(h, i.getHeight());
             d = Math.max(d, i.getDepth());
@@ -175,7 +178,7 @@ public interface Hunk<T> {
 
         Hunk<T> b = factory.apply(w, h, d);
 
-        for (Hunk<T> i : hunks) {
+        for(Hunk<T> i : hunks) {
             b.insert(i);
         }
 
@@ -183,13 +186,13 @@ public interface Hunk<T> {
     }
 
     static <A, B> void getDualSections2D(int sections, Hunk<A> a, Hunk<B> b, Consume.Six<Integer, Integer, Integer, Hunk<A>, Hunk<B>, Runnable> v, Consume.Five<Integer, Integer, Integer, Hunk<A>, Hunk<B>> inserterAB) {
-        if (a.getWidth() != b.getWidth() || a.getHeight() != b.getHeight() || a.getDepth() != b.getDepth()) {
+        if(a.getWidth() != b.getWidth() || a.getHeight() != b.getHeight() || a.getDepth() != b.getDepth()) {
             throw new RuntimeException("Hunk sizes must match!");
         }
 
         int dim = a.get2DDimension(sections);
 
-        if (sections <= 1) {
+        if(sections <= 1) {
             getDualSection(0, 0, 0, a.getWidth(), a.getHeight(), a.getDepth(), a, b, (ha, hr, r) -> v.accept(0, 0, 0, ha, hr, r), inserterAB);
             return;
         }
@@ -200,10 +203,10 @@ public interface Hunk<T> {
         int dr = a.getDepth() - (d * dim);
         int i, j;
 
-        for (i = 0; i < a.getWidth(); i += w) {
+        for(i = 0; i < a.getWidth(); i += w) {
             int ii = i;
 
-            for (j = 0; j < a.getDepth(); j += d) {
+            for(j = 0; j < a.getDepth(); j += d) {
                 int jj = j;
                 getDualSection(i, 0, j, i + w + (i == 0 ? wr : 0), a.getHeight(), j + d + (j == 0 ? dr : 0), a, b, (ha, hr, r) -> v.accept(ii, 0, jj, ha, hr, r), inserterAB);
                 i = i == 0 ? i + wr : i;
@@ -221,37 +224,44 @@ public interface Hunk<T> {
     /**
      * Create a hunk that is optimized for specific uses
      *
-     * @param w          width
-     * @param h          height
-     * @param d          depth
-     * @param type       the class type
-     * @param packed     if the hunk is generally more than 50% full (non-null nodes)
-     * @param concurrent if this hunk must be thread safe
-     * @param <T>        the type
+     * @param w
+     *     width
+     * @param h
+     *     height
+     * @param d
+     *     depth
+     * @param type
+     *     the class type
+     * @param packed
+     *     if the hunk is generally more than 50% full (non-null nodes)
+     * @param concurrent
+     *     if this hunk must be thread safe
+     * @param <T>
+     *     the type
      * @return the hunk
      */
     static <T> Hunk<T> newHunk(int w, int h, int d, Class<T> type, boolean packed, boolean concurrent) {
-        if (type.equals(Double.class)) {
+        if(type.equals(Double.class)) {
             return concurrent ?
-                    packed ? (Hunk<T>) newAtomicDoubleHunk(w, h, d) : newMappedHunk(w, h, d)
-                    : packed ? newArrayHunk(w, h, d) : newMappedHunkSynced(w, h, d);
+                packed ? (Hunk<T>) newAtomicDoubleHunk(w, h, d) : newMappedHunk(w, h, d)
+                : packed ? newArrayHunk(w, h, d) : newMappedHunkSynced(w, h, d);
         }
 
-        if (type.equals(Integer.class)) {
+        if(type.equals(Integer.class)) {
             return concurrent ?
-                    packed ? (Hunk<T>) newAtomicIntegerHunk(w, h, d) : newMappedHunk(w, h, d)
-                    : packed ? newArrayHunk(w, h, d) : newMappedHunkSynced(w, h, d);
+                packed ? (Hunk<T>) newAtomicIntegerHunk(w, h, d) : newMappedHunk(w, h, d)
+                : packed ? newArrayHunk(w, h, d) : newMappedHunkSynced(w, h, d);
         }
 
-        if (type.equals(Long.class)) {
+        if(type.equals(Long.class)) {
             return concurrent ?
-                    packed ? (Hunk<T>) newAtomicLongHunk(w, h, d) : newMappedHunk(w, h, d)
-                    : packed ? newArrayHunk(w, h, d) : newMappedHunkSynced(w, h, d);
+                packed ? (Hunk<T>) newAtomicLongHunk(w, h, d) : newMappedHunk(w, h, d)
+                : packed ? newArrayHunk(w, h, d) : newMappedHunkSynced(w, h, d);
         }
 
         return concurrent ?
-                packed ? newAtomicHunk(w, h, d) : newMappedHunk(w, h, d)
-                : packed ? newArrayHunk(w, h, d) : newMappedHunkSynced(w, h, d);
+            packed ? newAtomicHunk(w, h, d) : newMappedHunk(w, h, d)
+            : packed ? newArrayHunk(w, h, d) : newMappedHunkSynced(w, h, d);
     }
 
 
@@ -264,15 +274,15 @@ public interface Hunk<T> {
     }
 
     static void rotate(double x, double y, double z, int[] c) {
-        if (x % 360 != 0) {
+        if(x % 360 != 0) {
             rotateAroundX(Math.toRadians(x), c);
         }
 
-        if (y % 360 != 0) {
+        if(y % 360 != 0) {
             rotateAroundY(Math.toRadians(y), c);
         }
 
-        if (z % 360 != 0) {
+        if(z % 360 != 0) {
             rotateAroundZ(Math.toRadians(z), c);
         }
     }
@@ -374,14 +384,14 @@ public interface Hunk<T> {
     }
 
     default int filterDimension(int dim) {
-        if (dim <= 1) {
+        if(dim <= 1) {
             return 1;
         }
 
         dim = dim % 2 != 0 ? dim + 1 : dim;
 
-        if (dim > getMinimumDimension() / 2) {
-            if (dim <= 2) {
+        if(dim > getMinimumDimension() / 2) {
+            if(dim <= 2) {
                 return 1;
             }
 
@@ -392,7 +402,7 @@ public interface Hunk<T> {
     }
 
     default int get2DDimension(int sections) {
-        if (sections <= 1) {
+        if(sections <= 1) {
             return 1;
         }
 
@@ -400,7 +410,7 @@ public interface Hunk<T> {
     }
 
     default int get3DDimension(int sections) {
-        if (sections <= 1) {
+        if(sections <= 1) {
             return 1;
         }
 
@@ -412,9 +422,9 @@ public interface Hunk<T> {
     }
 
     default Hunk<T> iterateSync(Consume.Three<Integer, Integer, Integer> c) {
-        for (int i = 0; i < getWidth(); i++) {
-            for (int j = 0; j < getHeight(); j++) {
-                for (int k = 0; k < getDepth(); k++) {
+        for(int i = 0; i < getWidth(); i++) {
+            for(int j = 0; j < getHeight(); j++) {
+                for(int k = 0; k < getDepth(); k++) {
                     c.accept(i, j, k);
                 }
             }
@@ -424,9 +434,9 @@ public interface Hunk<T> {
     }
 
     default Hunk<T> iterateSync(Consume.Four<Integer, Integer, Integer, T> c) {
-        for (int i = 0; i < getWidth(); i++) {
-            for (int j = 0; j < getHeight(); j++) {
-                for (int k = 0; k < getDepth(); k++) {
+        for(int i = 0; i < getWidth(); i++) {
+            for(int j = 0; j < getHeight(); j++) {
+                for(int k = 0; k < getDepth(); k++) {
                     c.accept(i, j, k, get(i, j, k));
                 }
             }
@@ -436,9 +446,9 @@ public interface Hunk<T> {
     }
 
     default Hunk<T> updateSync(Function.Four<Integer, Integer, Integer, T, T> c) {
-        for (int i = 0; i < getWidth(); i++) {
-            for (int j = 0; j < getHeight(); j++) {
-                for (int k = 0; k < getDepth(); k++) {
+        for(int i = 0; i < getWidth(); i++) {
+            for(int j = 0; j < getHeight(); j++) {
+                for(int k = 0; k < getDepth(); k++) {
                     set(i, j, k, c.apply(i, j, k, get(i, j, k)));
                 }
             }
@@ -448,9 +458,9 @@ public interface Hunk<T> {
     }
 
     default Hunk<T> iterateSyncIO(Consume.FourIO<Integer, Integer, Integer, T> c) throws IOException {
-        for (int i = 0; i < getWidth(); i++) {
-            for (int j = 0; j < getHeight(); j++) {
-                for (int k = 0; k < getDepth(); k++) {
+        for(int i = 0; i < getWidth(); i++) {
+            for(int j = 0; j < getHeight(); j++) {
+                for(int k = 0; k < getDepth(); k++) {
                     c.accept(i, j, k, get(i, j, k));
                 }
             }
@@ -466,7 +476,7 @@ public interface Hunk<T> {
     default Hunk<T> getSectionsAtomic2D(int sections, Consume.Four<Integer, Integer, Integer, Hunk<T>> v) {
         int dim = get2DDimension(sections);
 
-        if (sections <= 1) {
+        if(sections <= 1) {
             getAtomicSection(0, 0, 0, getWidth(), getHeight(), getDepth(), (hh) -> v.accept(0, 0, 0, hh));
             return this;
         }
@@ -477,10 +487,10 @@ public interface Hunk<T> {
         int dr = getDepth() - (d * dim);
         int i, j;
 
-        for (i = 0; i < getWidth(); i += w) {
+        for(i = 0; i < getWidth(); i += w) {
             int ii = i;
 
-            for (j = 0; j < getDepth(); j += d) {
+            for(j = 0; j < getDepth(); j += d) {
                 int jj = j;
                 getAtomicSection(i, 0, j, i + w + (i == 0 ? wr : 0), getHeight(), j + d + (j == 0 ? dr : 0), (h) -> v.accept(ii, 0, jj, h));
                 i = i == 0 ? i + wr : i;
@@ -494,7 +504,7 @@ public interface Hunk<T> {
     default Hunk<T> getSections2D(int sections, Consume.Five<Integer, Integer, Integer, Hunk<T>, Runnable> v, Consume.Four<Integer, Integer, Integer, Hunk<T>> inserter) {
         int dim = get2DDimension(sections);
 
-        if (sections <= 1) {
+        if(sections <= 1) {
             getSection(0, 0, 0, getWidth(), getHeight(), getDepth(), (hh, r) -> v.accept(0, 0, 0, hh, r), inserter);
             return this;
         }
@@ -505,10 +515,10 @@ public interface Hunk<T> {
         int dr = getDepth() - (d * dim);
         int i, j;
 
-        for (i = 0; i < getWidth(); i += w) {
+        for(i = 0; i < getWidth(); i += w) {
             int ii = i;
 
-            for (j = 0; j < getDepth(); j += d) {
+            for(j = 0; j < getDepth(); j += d) {
                 int jj = j;
                 getSection(i, 0, j, i + w + (i == 0 ? wr : 0), getHeight(), j + d + (j == 0 ? dr : 0), (h, r) -> v.accept(ii, 0, jj, h, r), inserter);
                 i = i == 0 ? i + wr : i;
@@ -522,7 +532,7 @@ public interface Hunk<T> {
     default Hunk<T> getSections2DYLimit(int sections, int ymin, int ymax, Consume.Five<Integer, Integer, Integer, Hunk<T>, Runnable> v, Consume.Four<Integer, Integer, Integer, Hunk<T>> inserter) {
         int dim = get2DDimension(sections);
 
-        if (sections <= 1) {
+        if(sections <= 1) {
             getSection(0, 0, 0, getWidth(), getHeight(), getDepth(), (hh, r) -> v.accept(0, 0, 0, hh, r), inserter);
             return this;
         }
@@ -533,10 +543,10 @@ public interface Hunk<T> {
         int dr = getDepth() - (d * dim);
         int i, j;
 
-        for (i = 0; i < getWidth(); i += w) {
+        for(i = 0; i < getWidth(); i += w) {
             int ii = i;
 
-            for (j = 0; j < getDepth(); j += d) {
+            for(j = 0; j < getDepth(); j += d) {
                 int jj = j;
                 getSection(i, ymin, j, i + w + (i == 0 ? wr : 0), ymax, j + d + (j == 0 ? dr : 0), (h, r) -> v.accept(ii, ymin, jj, h, r), inserter);
                 i = i == 0 ? i + wr : i;
@@ -554,7 +564,7 @@ public interface Hunk<T> {
     default Hunk<T> getSections3D(int sections, Consume.Five<Integer, Integer, Integer, Hunk<T>, Runnable> v, Consume.Four<Integer, Integer, Integer, Hunk<T>> inserter) {
         int dim = get3DDimension(sections);
 
-        if (sections <= 1) {
+        if(sections <= 1) {
             getSection(0, 0, 0, getWidth(), getHeight(), getDepth(), (hh, r) -> v.accept(0, 0, 0, hh, r), inserter);
             return this;
         }
@@ -567,13 +577,13 @@ public interface Hunk<T> {
         int dr = getDepth() - (d * dim);
         int i, j, k;
 
-        for (i = 0; i < getWidth(); i += w) {
+        for(i = 0; i < getWidth(); i += w) {
             int ii = i;
 
-            for (j = 0; j < getHeight(); j += d) {
+            for(j = 0; j < getHeight(); j += d) {
                 int jj = j;
 
-                for (k = 0; k < getDepth(); k += d) {
+                for(k = 0; k < getDepth(); k += d) {
                     int kk = k;
                     getSection(ii, jj, kk, i + w + (i == 0 ? wr : 0), j + h + (j == 0 ? hr : 0), k + d + (k == 0 ? dr : 0), (hh, r) -> v.accept(ii, jj, kk, hh, r), inserter);
                     i = i == 0 ? i + wr : i;
@@ -605,20 +615,26 @@ public interface Hunk<T> {
     /**
      * Create a new hunk from a section of this hunk.
      *
-     * @param x1 The min x (inclusive)
-     * @param y1 The min y (inclusive)
-     * @param z1 The min z (inclusive)
-     * @param x2 The max x (exclusive)
-     * @param y2 The max y (exclusive)
-     * @param z2 The max z (exclusive)
+     * @param x1
+     *     The min x (inclusive)
+     * @param y1
+     *     The min y (inclusive)
+     * @param z1
+     *     The min z (inclusive)
+     * @param x2
+     *     The max x (exclusive)
+     * @param y2
+     *     The max y (exclusive)
+     * @param z2
+     *     The max z (exclusive)
      * @return the new hunk (x2-x1, y2-y1, z2-z1)
      */
     default ArrayHunk<T> crop(int x1, int y1, int z1, int x2, int y2, int z2) {
         ArrayHunk<T> h = new ArrayHunk<T>(x2 - x1, y2 - y1, z2 - z1);
 
-        for (int i = x1; i < x2; i++) {
-            for (int j = y1; j < y2; j++) {
-                for (int k = z1; k < z2; k++) {
+        for(int i = x1; i < x2; i++) {
+            for(int j = y1; j < y2; j++) {
+                for(int k = z1; k < z2; k++) {
                     h.setRaw(i - x1, j - y1, k - z1, getRaw(i, j, k));
                 }
             }
@@ -631,12 +647,18 @@ public interface Hunk<T> {
      * Create a new view of this same hunk from a section of this hunk.
      * Modifications are routed to this hunk!
      *
-     * @param x1 The min x (inclusive)
-     * @param y1 The min y (inclusive)
-     * @param z1 The min z (inclusive)
-     * @param x2 The max x (exclusive)
-     * @param y2 The max y (exclusive)
-     * @param z2 The max z (exclusive)
+     * @param x1
+     *     The min x (inclusive)
+     * @param y1
+     *     The min y (inclusive)
+     * @param z1
+     *     The min z (inclusive)
+     * @param x2
+     *     The max x (exclusive)
+     * @param y2
+     *     The max y (exclusive)
+     * @param z2
+     *     The max z (exclusive)
      * @return the cropped view of this hunk (x2-x1, y2-y1, z2-z1)
      */
     default Hunk<T> croppedView(int x1, int y1, int z1, int x2, int y2, int z2) {
@@ -661,18 +683,25 @@ public interface Hunk<T> {
     /**
      * Set a region
      *
-     * @param x1 inclusive 1st x
-     * @param y1 inclusive 1st y
-     * @param z1 inclusive 1st z
-     * @param x2 inclusive 2nd x
-     * @param y2 inclusive 2nd y
-     * @param z2 inclusive 2nd z
-     * @param t  the value to set
+     * @param x1
+     *     inclusive 1st x
+     * @param y1
+     *     inclusive 1st y
+     * @param z1
+     *     inclusive 1st z
+     * @param x2
+     *     inclusive 2nd x
+     * @param y2
+     *     inclusive 2nd y
+     * @param z2
+     *     inclusive 2nd z
+     * @param t
+     *     the value to set
      */
     default void set(int x1, int y1, int z1, int x2, int y2, int z2, T t) {
-        for (int i = x1; i <= x2; i++) {
-            for (int j = y1; j <= y2; j++) {
-                for (int k = z1; k <= z2; k++) {
+        for(int i = x1; i <= x2; i++) {
+            for(int j = y1; j <= y2; j++) {
+                for(int k = z1; k <= z2; k++) {
                     setRaw(i, j, k, t);
                 }
             }
@@ -682,9 +711,12 @@ public interface Hunk<T> {
     /**
      * Get the value to the closest valid position
      *
-     * @param x the x
-     * @param y the y
-     * @param z the z
+     * @param x
+     *     the x
+     * @param y
+     *     the y
+     * @param z
+     *     the z
      * @return the value closest to the border of the hunk
      */
     default T getClosest(int x, int y, int z) {
@@ -714,11 +746,12 @@ public interface Hunk<T> {
     /**
      * Get a 1 node thick hunk representing the face of this hunk
      *
-     * @param f the face
+     * @param f
+     *     the face
      * @return the hunk view of this hunk
      */
     default Hunk<T> viewFace(HunkFace f) {
-        switch (f) {
+        switch(f) {
             case BOTTOM:
                 return croppedView(0, 0, 0, getWidth() - 1, 0, getDepth() - 1);
             case EAST:
@@ -741,11 +774,12 @@ public interface Hunk<T> {
     /**
      * Crop (copy) a 1 node thick hunk representing the face of this hunk
      *
-     * @param f the face
+     * @param f
+     *     the face
      * @return the hunk copy (face) of this hunk
      */
     default Hunk<T> cropFace(HunkFace f) {
-        switch (f) {
+        switch(f) {
             case BOTTOM:
                 return crop(0, 0, 0, getWidth() - 1, 0, getDepth() - 1);
             case EAST:
@@ -768,17 +802,21 @@ public interface Hunk<T> {
     /**
      * Set a value at the given position
      *
-     * @param x the x
-     * @param y the y
-     * @param z the z
-     * @param t the value
+     * @param x
+     *     the x
+     * @param y
+     *     the y
+     * @param z
+     *     the z
+     * @param t
+     *     the value
      */
     default void set(int x, int y, int z, T t) {
         setRaw(x, y, z, t);
     }
 
     default void setIfExists(int x, int y, int z, T t) {
-        if (x < 0 || x >= getWidth() || y < 0 || y >= getHeight() || z < 0 || z >= getDepth()) {
+        if(x < 0 || x >= getWidth() || y < 0 || y >= getHeight() || z < 0 || z >= getDepth()) {
             return;
         }
 
@@ -786,7 +824,7 @@ public interface Hunk<T> {
     }
 
     default T getIfExists(int x, int y, int z, T t) {
-        if (x < 0 || x >= getWidth() || y < 0 || y >= getHeight() || z < 0 || z >= getDepth()) {
+        if(x < 0 || x >= getWidth() || y < 0 || y >= getHeight() || z < 0 || z >= getDepth()) {
             return t;
         }
 
@@ -800,19 +838,26 @@ public interface Hunk<T> {
     /**
      * Set a value at the given position without checking coordinate bounds
      *
-     * @param x the x
-     * @param y the y
-     * @param z the z
-     * @param t the value
+     * @param x
+     *     the x
+     * @param y
+     *     the y
+     * @param z
+     *     the z
+     * @param t
+     *     the value
      */
     void setRaw(int x, int y, int z, T t);
 
     /**
      * Get a value at the given position without checking coordinate bounds
      *
-     * @param x the x
-     * @param y the y
-     * @param z the z
+     * @param x
+     *     the x
+     * @param y
+     *     the y
+     * @param z
+     *     the z
      * @return the value or null
      */
     T getRaw(int x, int y, int z);
@@ -820,9 +865,12 @@ public interface Hunk<T> {
     /**
      * Get a value at the given position
      *
-     * @param x the x
-     * @param y the y
-     * @param z the z
+     * @param x
+     *     the x
+     * @param y
+     *     the y
+     * @param z
+     *     the z
      * @return the value or null
      */
     default T get(int x, int y, int z) {
@@ -832,7 +880,7 @@ public interface Hunk<T> {
     default T getOr(int x, int y, int z, T t) {
         T v = getRaw(x, y, z);
 
-        if (v == null) {
+        if(v == null) {
             return t;
         }
 
@@ -842,10 +890,14 @@ public interface Hunk<T> {
     /**
      * Insert a hunk into this one with an offset the inserted hunk
      *
-     * @param offX the offset from zero for x
-     * @param offY the offset from zero for y
-     * @param offZ the offset from zero for z
-     * @param hunk the hunk to insert
+     * @param offX
+     *     the offset from zero for x
+     * @param offY
+     *     the offset from zero for y
+     * @param offZ
+     *     the offset from zero for z
+     * @param hunk
+     *     the hunk to insert
      */
     default void insert(int offX, int offY, int offZ, Hunk<T> hunk) {
         insert(offX, offY, offZ, hunk, false);
@@ -858,7 +910,8 @@ public interface Hunk<T> {
     /**
      * Insert a hunk into this one
      *
-     * @param hunk the hunk to insert
+     * @param hunk
+     *     the hunk to insert
      */
     default void insert(Hunk<T> hunk) {
         insert(0, 0, 0, hunk, false);
@@ -878,8 +931,10 @@ public interface Hunk<T> {
     /**
      * Insert a hunk into this one
      *
-     * @param hunk     the hunk to insert
-     * @param inverted invert the inserted hunk or not
+     * @param hunk
+     *     the hunk to insert
+     * @param inverted
+     *     invert the inserted hunk or not
      */
     default void insert(Hunk<T> hunk, boolean inverted) {
         insert(0, 0, 0, hunk, inverted);
@@ -889,16 +944,21 @@ public interface Hunk<T> {
      * Insert a hunk into this one with an offset and possibly inverting the y of
      * the inserted hunk
      *
-     * @param offX    the offset from zero for x
-     * @param offY    the offset from zero for y
-     * @param offZ    the offset from zero for z
-     * @param hunk    the hunk to insert
-     * @param invertY should the inserted hunk be inverted
+     * @param offX
+     *     the offset from zero for x
+     * @param offY
+     *     the offset from zero for y
+     * @param offZ
+     *     the offset from zero for z
+     * @param hunk
+     *     the hunk to insert
+     * @param invertY
+     *     should the inserted hunk be inverted
      */
     default void insert(int offX, int offY, int offZ, Hunk<T> hunk, boolean invertY) {
-        for (int i = offX; i < offX + hunk.getWidth(); i++) {
-            for (int j = offY; j < offY + hunk.getHeight(); j++) {
-                for (int k = offZ; k < offZ + hunk.getDepth(); k++) {
+        for(int i = offX; i < offX + hunk.getWidth(); i++) {
+            for(int j = offY; j < offY + hunk.getHeight(); j++) {
+                for(int k = offZ; k < offZ + hunk.getDepth(); k++) {
                     setRaw(i, j, k, hunk.getRaw(i - offX, j - offY, k - offZ));
                 }
             }
@@ -906,20 +966,26 @@ public interface Hunk<T> {
     }
 
     /**
-     * Insert a hunk into this one with an offset and possibly inverting the y of. Will never insert a node if its already used
+     * Insert a hunk into this one with an offset and possibly inverting the y of. Will never insert a node if its
+     * already used
      * the inserted hunk
      *
-     * @param offX    the offset from zero for x
-     * @param offY    the offset from zero for y
-     * @param offZ    the offset from zero for z
-     * @param hunk    the hunk to insert
-     * @param invertY should the inserted hunk be inverted
+     * @param offX
+     *     the offset from zero for x
+     * @param offY
+     *     the offset from zero for y
+     * @param offZ
+     *     the offset from zero for z
+     * @param hunk
+     *     the hunk to insert
+     * @param invertY
+     *     should the inserted hunk be inverted
      */
     default void insertSoftly(int offX, int offY, int offZ, Hunk<T> hunk, boolean invertY, Predicate<T> shouldOverwrite) {
-        for (int i = offX; i < offX + hunk.getWidth(); i++) {
-            for (int j = offY; j < offY + hunk.getHeight(); j++) {
-                for (int k = offZ; k < offZ + hunk.getDepth(); k++) {
-                    if (shouldOverwrite.test(getRaw(i, j, k))) {
+        for(int i = offX; i < offX + hunk.getWidth(); i++) {
+            for(int j = offY; j < offY + hunk.getHeight(); j++) {
+                for(int k = offZ; k < offZ + hunk.getDepth(); k++) {
+                    if(shouldOverwrite.test(getRaw(i, j, k))) {
                         setRaw(i, j, k, hunk.getRaw(i - offX, j - offY, k - offZ));
                     }
                 }
@@ -930,7 +996,8 @@ public interface Hunk<T> {
     /**
      * Acts like fill, however if used by a mapped hunk, will simply clear it
      *
-     * @param b the data to use for fill
+     * @param b
+     *     the data to use for fill
      */
     default void empty(T b) {
         fill(b);
@@ -968,9 +1035,9 @@ public interface Hunk<T> {
         Hunk<T> r = builder.get(maxX - minX, maxY - minY, maxZ - minZ);
         int[] cr = {(maxX - minX) / 2, (maxY - minY) / 2, (maxZ - minZ) / 2};
 
-        for (i = 0; i < w; i++) {
-            for (j = 0; j < h; j++) {
-                for (k = 0; k < d; k++) {
+        for(i = 0; i < w; i++) {
+            for(j = 0; j < h; j++) {
+                for(k = 0; k < d; k++) {
                     b[0] = i - c[0];
                     b[1] = j - c[1];
                     b[2] = k - c[2];
@@ -978,7 +1045,7 @@ public interface Hunk<T> {
 
                     try {
                         r.set(b[0] + cr[0], b[1] + cr[1], b[2] + cr[2], get(i, j, k));
-                    } catch (Throwable e) {
+                    } catch(Throwable e) {
 
                     }
                 }
