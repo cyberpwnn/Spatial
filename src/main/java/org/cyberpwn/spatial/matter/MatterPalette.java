@@ -18,7 +18,7 @@
 
 package org.cyberpwn.spatial.matter;
 
-import org.cyberpwn.spatial.IOAdapter;
+import org.cyberpwn.spatial.util.IOAdapter;
 import org.cyberpwn.spatial.container.DataPalette;
 import org.cyberpwn.spatial.util.Varint;
 

@@ -19,12 +19,10 @@
 package org.cyberpwn.spatial.matter;
 
 
-import com.google.common.cache.Cache;
 import org.cyberpwn.spatial.container.DataContainer;
 import org.cyberpwn.spatial.container.NodeWritable;
 import org.cyberpwn.spatial.container.Palette;
 import org.cyberpwn.spatial.container.PaletteType;
-import org.cyberpwn.spatial.Writable;
 import org.cyberpwn.spatial.hunk.Hunk;
 import org.cyberpwn.spatial.hunk.storage.PaletteOrHunk;
 import org.cyberpwn.spatial.util.CompressedNumbers;

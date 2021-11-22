@@ -18,7 +18,7 @@
 
 package org.cyberpwn.spatial.container;
 
-import org.cyberpwn.spatial.IOAdapter;
+import org.cyberpwn.spatial.util.IOAdapter;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

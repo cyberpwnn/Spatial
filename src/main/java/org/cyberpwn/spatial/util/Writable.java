@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.cyberpwn.spatial;
+package org.cyberpwn.spatial.util;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
