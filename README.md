@@ -10,5 +10,5 @@ maven { url "https://dl.cloudsmith.io/public/arcane/archive/maven/" }
 ```
 
 ```groovy
-implementation 'art.arcane:Spatial:<VERSION>'
+implementation 'org.cyberpwn:Spatial:<VERSION>'
 ```
