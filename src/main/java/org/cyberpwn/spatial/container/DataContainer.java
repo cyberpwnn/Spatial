@@ -20,10 +20,12 @@ package org.cyberpwn.spatial.container;
 
 import org.cyberpwn.spatial.util.Varint;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,6 +47,16 @@ public class DataContainer<T> {
         this.bits = new AtomicInteger(INITIAL_BITS);
         this.data = new AtomicReference<>(new DataBits(INITIAL_BITS, length));
         this.palette = new AtomicReference<>(newPalette(INITIAL_BITS));
+    }
+
+    public DataContainer(byte[] data, NodeWritable<T> writer) throws IOException
+    {
+        this(new ByteArrayInputStream(data), writer);
+    }
+
+    public DataContainer(InputStream in, NodeWritable<T> writer) throws IOException
+    {
+        this(new DataInputStream(in), writer);
     }
 
     public DataContainer(DataInputStream din, NodeWritable<T> writer) throws IOException {

@@ -19,7 +19,7 @@
 package org.cyberpwn.spatial.mantle;
 
 import lombok.Getter;
-import org.cyberpwn.spatial.matter.IrisMatter;
+import org.cyberpwn.spatial.matter.SpatialMatter;
 import org.cyberpwn.spatial.matter.Matter;
 import org.cyberpwn.spatial.matter.MatterSlice;
 import org.cyberpwn.spatial.util.Consume;
@@ -144,7 +144,7 @@ public class MantleChunk {
         Matter matter = get(section);
 
         if (matter == null) {
-            matter = new IrisMatter(16, 16, 16);
+            matter = new SpatialMatter(16, 16, 16);
             sections.set(section, matter);
         }
 

@@ -19,11 +19,20 @@
 package org.cyberpwn.spatial.matter;
 
 import lombok.Getter;
+import org.cyberpwn.spatial.container.Palette;
+import org.cyberpwn.spatial.matter.slices.BooleanMatter;
+import org.cyberpwn.spatial.matter.slices.ByteMatter;
+import org.cyberpwn.spatial.matter.slices.DoubleMatter;
+import org.cyberpwn.spatial.matter.slices.FloatMatter;
+import org.cyberpwn.spatial.matter.slices.IntMatter;
+import org.cyberpwn.spatial.matter.slices.LongMatter;
+import org.cyberpwn.spatial.matter.slices.ShortMatter;
+import org.cyberpwn.spatial.matter.slices.StringMatter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class IrisMatter implements Matter {
+public class SpatialMatter implements Matter {
     protected static final Map<Class<?>, MatterSlice<?>> slicers = new HashMap<>();
 
     @Getter
@@ -41,7 +50,7 @@ public class IrisMatter implements Matter {
     @Getter
     private final Map<Class<?>, MatterSlice<?>> sliceMap;
 
-    public IrisMatter(int width, int height, int depth) {
+    public SpatialMatter(int width, int height, int depth) {
         if(width < 1 || height < 1 || depth < 1)
         {
             throw new RuntimeException("Invalid Matter Size " + width + "x" + height + "x" + depth);
@@ -56,12 +65,17 @@ public class IrisMatter implements Matter {
 
     public static void registerSliceType(MatterSlice<?> s)
     {
-        slicers.put(s.getType(), s);
+        registerSliceType(s.getType(), s);
+    }
+
+    private static void registerSliceType(Class<?> type, MatterSlice<?> s)
+    {
+        slicers.put(type, s);
     }
 
     @Override
     public <T> MatterSlice<T> createSlice(Class<T> type, Matter m) {
-        MatterSlice<?> slice = slicers.get(type);
+        MatterSlice<?> slice = slicers.get(getClass(type));
 
         if (slice == null) {
             return null;
@@ -74,5 +88,17 @@ public class IrisMatter implements Matter {
         }
 
         return null;
+    }
+
+    static
+    {
+        registerSliceType(new DoubleMatter());
+        registerSliceType(new ByteMatter());
+        registerSliceType(new FloatMatter());
+        registerSliceType(new ShortMatter());
+        registerSliceType(new BooleanMatter());
+        registerSliceType(new IntMatter());
+        registerSliceType(new LongMatter());
+        registerSliceType(new StringMatter());
     }
 }

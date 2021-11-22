@@ -19,9 +19,10 @@
 package org.cyberpwn.spatial.matter;
 
 
-import org.cyberpwn.spatial.hunk.Hunk;
 import org.cyberpwn.spatial.util.Pos;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -60,18 +61,25 @@ public interface Matter {
         return m;
     }
 
+    static Matter read(byte[] data) throws IOException, ClassNotFoundException {
+        InputStream in = new ByteArrayInputStream(data);
+        Matter m = read(in);
+        in.close();
+        return m;
+    }
+
     default Matter copy() {
-        Matter m = new IrisMatter(getWidth(), getHeight(), getDepth());
+        Matter m = new SpatialMatter(getWidth(), getHeight(), getDepth());
         getSliceMap().forEach((k, v) -> m.slice(k).forceInject(v));
         return m;
     }
 
     static Matter read(InputStream in) throws IOException, ClassNotFoundException {
-        return read(in, (b) -> new IrisMatter(b.getX(), b.getY(), b.getZ()));
+        return read(in, (b) -> new SpatialMatter(b.getX(), b.getY(), b.getZ()));
     }
 
     static Matter readDin(DataInputStream in) throws IOException, ClassNotFoundException {
-        return readDin(in, (b) -> new IrisMatter(b.getX(), b.getY(), b.getZ()));
+        return readDin(in, (b) -> new SpatialMatter(b.getX(), b.getY(), b.getZ()));
     }
 
     /**
@@ -101,9 +109,9 @@ public interface Matter {
             String cn = din.readUTF();
             try {
                 Class<?> type = Class.forName(cn);
-                MatterSlice<?> slice = matter.createSlice(type, matter);
+                MatterSlice<?> slice = matter.createSlice(matter.getClass(type), matter);
                 slice.read(din);
-                matter.putSlice(type, slice);
+                matter.putSlice(matter.getClass(type), slice);
             } catch (Throwable e) {
                 e.printStackTrace();
                 throw new IOException("Can't read class '" + cn + "' (slice count reverse at " + sliceCount + ")");
@@ -204,7 +212,7 @@ public interface Matter {
      * @return the slice or null
      */
     default <T> MatterSlice<T> getSlice(Class<T> t) {
-        return (MatterSlice<T>) getSliceMap().get(t);
+        return (MatterSlice<T>) getSliceMap().get(getClass(t));
     }
 
     /**
@@ -215,7 +223,7 @@ public interface Matter {
      * @return the deleted slice, or null if it diddn't exist
      */
     default <T> MatterSlice<T> deleteSlice(Class<?> c) {
-        return (MatterSlice<T>) getSliceMap().remove(c);
+        return (MatterSlice<T>) getSliceMap().remove(getClass(c));
     }
 
     /**
@@ -227,21 +235,42 @@ public interface Matter {
      * @return the overwritten slice if there was an existing slice of that type
      */
     default <T> MatterSlice<T> putSlice(Class<?> c, MatterSlice<T> slice) {
-        return (MatterSlice<T>) getSliceMap().put(c, slice);
+        return (MatterSlice<T>) getSliceMap().put(getClass(c), slice);
     }
 
     default Class<?> getClass(Object w) {
+        if(w instanceof Integer) {return Integer.class;}
+        if(w instanceof Double) {return Double.class;}
+        if(w instanceof Boolean) {return Boolean.class;}
+        if(w instanceof Short) {return Short.class;}
+        if(w instanceof Long) {return Long.class;}
+        if(w instanceof Float) {return Float.class;}
+        if(w instanceof Byte) {return Byte.class;}
+        if(w instanceof Character) {return Character.class;}
+
         return w.getClass();
     }
 
-    default <T> MatterSlice<T> slice(Class<?> c) {
-        MatterSlice<T> slice = (MatterSlice<T>) getSlice(c);
-        if (slice == null) {
-            slice = (MatterSlice<T>) createSlice(c, this);
+    default Class<?> getClass(Class<?> w) {
+        if(w.equals(int.class)) {return Integer.class;}
+        if(w.equals(double.class)) {return Double.class;}
+        if(w.equals(boolean.class)) {return Boolean.class;}
+        if(w.equals(short.class)) {return Short.class;}
+        if(w.equals(long.class)) {return Long.class;}
+        if(w.equals(float.class)) {return Float.class;}
+        if(w.equals(byte.class)) {return Byte.class;}
+        if(w.equals(char.class)) {return Character.class;}
 
+        return w;
+    }
+
+    default <T> MatterSlice<T> slice(Class<?> c) {
+        MatterSlice<T> slice = (MatterSlice<T>) getSlice(getClass(c));
+        if (slice == null) {
+            slice = (MatterSlice<T>) createSlice(getClass(c), this);
             if (slice == null) {
                 try {
-                    throw new RuntimeException("Bad slice " + c.getCanonicalName());
+                    throw new RuntimeException("Bad slice " + c.getCanonicalName() + ". Did you use SpatialMatter.register?");
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
@@ -249,7 +278,7 @@ public interface Matter {
                 return null;
             }
 
-            putSlice(c, slice);
+            putSlice(getClass(c), slice);
         }
 
         return slice;
@@ -292,6 +321,12 @@ public interface Matter {
         OutputStream out = new FileOutputStream(f);
         write(out);
         out.close();
+    }
+
+    default byte[] write() throws IOException {
+        ByteArrayOutputStream boas = new ByteArrayOutputStream();
+        write(boas);
+        return boas.toByteArray();
     }
 
     /**
