@@ -232,8 +232,7 @@ List<Pos> points = List.of(
     new Pos(1, 2, 1),
     new Pos(33, 35, -23),
     new Pos(39, 56, -222));
-w.setLine(points, 
-    3, true, "curved-line");
+w.setLine(points, 3, true, "curved-line");
 
 // Saves & Unloads everything when you are done
 mantle.close(); 
