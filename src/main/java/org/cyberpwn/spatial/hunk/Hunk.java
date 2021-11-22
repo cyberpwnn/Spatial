@@ -36,6 +36,7 @@ import org.cyberpwn.spatial.hunk.view.SynchronizedHunkView;
 import org.cyberpwn.spatial.hunk.view.WriteTrackHunk;
 import org.cyberpwn.spatial.util.Consume;
 import org.cyberpwn.spatial.util.Function;
+import org.cyberpwn.spatial.util.Pos;
 import org.cyberpwn.spatial.util.Supplier3R;
 
 import java.io.IOException;
@@ -690,8 +691,8 @@ public interface Hunk<T> {
         return getRaw(x >= getWidth() ? getWidth() - 1 : x < 0 ? 0 : x, y >= getHeight() ? getHeight() - 1 : y < 0 ? 0 : y, z >= getDepth() ? getDepth() - 1 : z < 0 ? 0 : z);
     }
 
-    default int[] getCenter() {
-        return new int[]{getCenterX(), getCenterY(), getCenterZ()};
+    default Pos getCenter() {
+        return new Pos(getCenterX(), getCenterY(), getCenterZ());
     }
 
     default int getCenterX() {
