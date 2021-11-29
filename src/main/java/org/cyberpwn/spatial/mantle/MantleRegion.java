@@ -35,7 +35,7 @@ import java.util.zip.GZIPOutputStream;
  * Tectonic Plates are essentially representations of regions in minecraft.
  * Tectonic Plates are fully atomic & thread safe
  */
-public class TectonicPlate {
+public class MantleRegion {
     private final int sectionHeight;
     private final AtomicReferenceArray<MantleChunk> chunks;
 
@@ -51,7 +51,7 @@ public class TectonicPlate {
      * @param worldHeight
      *     the height of the world
      */
-    public TectonicPlate(int worldHeight, int x, int z) {
+    public MantleRegion(int worldHeight, int x, int z) {
         this.sectionHeight = worldHeight >> 4;
         this.chunks = new AtomicReferenceArray<>(1024);
         this.x = x;
@@ -70,7 +70,7 @@ public class TectonicPlate {
      * @throws ClassNotFoundException
      *     real shit bro
      */
-    public TectonicPlate(int worldHeight, DataInputStream din) throws IOException, ClassNotFoundException {
+    public MantleRegion(int worldHeight, DataInputStream din) throws IOException, ClassNotFoundException {
         this(worldHeight, din.readInt(), din.readInt());
         for(int i = 0; i < chunks.length(); i++) {
             if(din.readBoolean()) {
@@ -79,11 +79,11 @@ public class TectonicPlate {
         }
     }
 
-    public static TectonicPlate read(int worldHeight, File file) throws IOException, ClassNotFoundException {
+    public static MantleRegion read(int worldHeight, File file) throws IOException, ClassNotFoundException {
         FileInputStream fin = new FileInputStream(file);
         GZIPInputStream gzi = new GZIPInputStream(fin);
         DataInputStream din = new DataInputStream(gzi);
-        TectonicPlate p = new TectonicPlate(worldHeight, din);
+        MantleRegion p = new MantleRegion(worldHeight, din);
         din.close();
 
         return p;

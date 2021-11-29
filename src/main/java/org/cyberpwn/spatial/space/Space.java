@@ -16,48 +16,233 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.cyberpwn.spatial.mantle;
-
-
+package org.cyberpwn.spatial.space;
 import com.google.common.collect.ImmutableList;
-import lombok.Data;
-import org.cyberpwn.spatial.matter.Matter;
-import org.cyberpwn.spatial.util.CompressedNumbers;
+import org.cyberpwn.spatial.mantle.Mantle;
+import org.cyberpwn.spatial.util.Consume;
 import org.cyberpwn.spatial.util.Function;
 import org.cyberpwn.spatial.util.Pos;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Data
-public class MantleWriter {
-    private final Mantle mantle;
-    private final Map<Long, MantleChunk> cachedChunks;
-    private final int radius;
-    private final int x;
-    private final int z;
-    private final boolean infinite;
+public class Space
+{
+    private final AtomicBoolean closed;
+    private final File folder;
+    private final Map<Integer, Mantle> mantles;
 
-    public MantleWriter(Mantle mantle) {
-        this(mantle, 0, 0, -1);
+    public Space(File folder)
+    {
+        this.closed = new AtomicBoolean();
+        this.folder = folder;
+        this.mantles = new HashMap<>();
     }
 
-    public MantleWriter(Mantle mantle, int x, int z, int radius) {
-        infinite = radius == -1;
-        this.mantle = mantle;
-        this.cachedChunks = new HashMap<>();
-        this.radius = radius;
-        this.x = x;
-        this.z = z;
+    public void clear()
+    {
+        mantles.values().forEach(Mantle::clear);
+        mantles.clear();
 
-        for(int i = -radius; i <= radius; i++) {
-            for(int j = -radius; j <= radius; j++) {
-                cachedChunks.put(CompressedNumbers.i2(i + x, j + z), mantle.getChunk(i + x, j + z));
+        if(folder.exists() && folder.isDirectory())
+        {
+            for(File i : folder.listFiles())
+            {
+                if(i.isDirectory())
+                {
+                    for(File j : i.listFiles())
+                    {
+                        if(!j.delete())
+                        {
+                            j.deleteOnExit();
+                        }
+                    }
+                }
+
+                i.delete();
+            }
+
+            folder.delete();
+        }
+    }
+
+    public <T> void iterateRegion(int x, int y, int z, int radius, Class<T> type, Consume.Four<Integer, Integer, Integer, T> iterator)
+    {
+        iterateRegion(x - radius, y - radius, z - radius, x + radius, y + radius, z + radius, type, iterator);
+    }
+
+    public <T> void iterateRegion(int x1, int y1, int z1, int x2, int y2, int z2, Class<T> type, Consume.Four<Integer, Integer, Integer, T> iterator) {
+        int xi = Math.min(x1, x2);
+        int xa = Math.max(x1, x2);
+        int yi = Math.min(y1, y2);
+        int ya = Math.max(y1, y2);
+        int zi = Math.min(z1, z2);
+        int za = Math.max(z1, z2);
+
+        for(int i = xi; i < xa; i++)
+        {
+            for(int j = yi; j < ya; j++)
+            {
+                for(int k = zi; k < za; k++)
+                {
+                    T t = get(i, j, k, type);
+
+                    if(t != null)
+                    {
+                        iterator.accept(i, j, k, t);
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * Save & unload regions that have not been used for more than the
+     * specified amount of milliseconds
+     *
+     * @param idleDuration
+     *     the duration
+     */
+    public synchronized void trim(long idleDuration) {
+        if(closed.get()) {
+            throw new RuntimeException("The Space is closed");
+        }
+
+        for(Mantle i : mantles.values()) {
+            i.trim(idleDuration);
+        }
+
+        for(Integer i : new HashSet<>(mantles.keySet()))
+        {
+            if(mantles.get(i).getLoadedRegions().isEmpty())
+            {
+                mantles.remove(i).close();
+            }
+        }
+    }
+
+    /**
+     * Gets the data that the current block position This method will attempt to find a
+     * Tectonic Plate either by loading it or creating a new one. This method uses
+     * the hyper lock packaged with each Mantle. The hyperlock allows locking of multiple
+     * threads at a single region while still allowing other threads to continue
+     * reading & writing other regions. Hyperlocks are slow sync, but in multicore
+     * environments, they drastically speed up loading & saving large counts of plates
+     *
+     * @param x
+     *     the block's x coordinate
+     * @param y
+     *     the block's y coordinate
+     * @param z
+     *     the block's z coordinate
+     * @param type
+     *     the class representing the type of data being requested
+     * @param <T>
+     *     the type assumed from the provided class
+     * @return the returned result (or null) if it doesnt exist
+     */
+    public <T> T get(int x, int y, int z, Class<T> type)
+    {
+        if(closed.get())
+        {
+            throw new RuntimeException("Closed!");
+        }
+
+        if(!hasMantle(y))
+        {
+            return null;
+        }
+
+        return getMantle(y).get(x, y & 511, z, type);
+    }
+
+    /**
+     * Set data T at the given block position. This method will attempt to find a
+     * Tectonic Plate either by loading it or creating a new one. This method uses
+     * the hyper lock packaged with each Mantle. The hyperlock allows locking of multiple
+     * threads at a single region while still allowing other threads to continue
+     * reading & writing other regions. Hyperlocks are slow sync, but in multicore
+     * environments, they drastically speed up loading & saving large counts of plates
+     *
+     * @param x
+     *     the block's x coordinate
+     * @param y
+     *     the block's y coordinate
+     * @param z
+     *     the block's z coordinate
+     * @param t
+     *     the data to set at the block
+     * @param <T>
+     *     the type of data (generic method)
+     */
+    public <T> void set(int x, int y, int z, T t) {
+        if(closed.get())
+        {
+            throw new RuntimeException("Closed!");
+        }
+
+        getMantle(y).set(x, y & 511, z, t);
+    }
+
+    public void close()
+    {
+        if(closed.get())
+        {
+            return;
+        }
+
+        closed.set(true);
+        mantles.values().forEach(Mantle::close);
+        mantles.clear();
+    }
+
+    public void saveAll()
+    {
+        if(closed.get())
+        {
+            throw new RuntimeException("Closed!");
+        }
+
+        mantles.values().forEach(Mantle::saveAll);
+    }
+
+    public <T> void remove(int x, int y, int z, Class<T> t) {
+        if(closed.get())
+        {
+            throw new RuntimeException("Closed!");
+        }
+
+        if(!hasMantle(y))
+        {
+            return;
+        }
+
+        getMantle(y).remove(x, y & 511, z, t);
+    }
+
+    public boolean hasMantle(int y)
+    {
+        return mantles.containsKey(y >> 9) || new File(folder, Integer.toHexString(y >> 9)).exists();
+    }
+
+    /**
+     * Get the mantle responsible for the given Y level
+     * @param y the raw y level you need to access
+     * @return the mantle responsible for storing that y location
+     */
+    private Mantle getMantle(int y)
+    {
+        if(closed.get())
+        {
+            throw new RuntimeException("Closed!");
+        }
+
+        return mantles.computeIfAbsent(y >> 9, k -> new Mantle(new File(folder, Integer.toHexString(k)), 512));
     }
 
     private static Set<Pos> getBallooned(Set<Pos> vset, double radius) {
@@ -121,24 +306,7 @@ public class MantleWriter {
             return;
         }
 
-        int cx = x >> 4;
-        int cz = z >> 4;
-
-        if(y < 0 || y >= mantle.getWorldHeight()) {
-            return;
-        }
-
-        if(infinite || (cx >= this.x - radius && cx <= this.x + radius
-            && cz >= this.z - radius && cz <= this.z + radius)) {
-            MantleChunk chunk = cachedChunks.get(CompressedNumbers.i2(cx, cz));
-
-            if(chunk == null) {
-                return;
-            }
-
-            Matter matter = chunk.getOrCreate(y >> 4);
-            matter.slice(matter.getClass(t)).set(x & 15, y & 15, z & 15, t);
-        }
+        set(x, y, z, t);
     }
 
     /**
@@ -467,11 +635,8 @@ public class MantleWriter {
             height = -height;
             cy = cy - height;
         }
-
         if(cy < 0) {
             cy = 0;
-        } else if(cy + height - 1 > getMantle().getWorldHeight()) {
-            height = getMantle().getWorldHeight() - cy + 1;
         }
 
         final double invRadiusX = 1 / radiusX;
@@ -538,25 +703,5 @@ public class MantleWriter {
         for(Pos i : positions) {
             set(i, data.apply(i.getX(), i.getY(), i.getZ()));
         }
-    }
-
-    public boolean isWithin(Pos pos) {
-        return isWithin(pos.getX(), pos.getY(), pos.getZ());
-    }
-
-    public boolean isWithin(int x, int y, int z) {
-        int cx = x >> 4;
-        int cz = z >> 4;
-
-        if(y < 0 || y >= mantle.getWorldHeight()) {
-            return false;
-        }
-
-        if(infinite) {
-            return true;
-        }
-
-        return cx >= this.x - radius && cx <= this.x + radius
-            && cz >= this.z - radius && cz <= this.z + radius;
     }
 }

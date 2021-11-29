@@ -27,7 +27,6 @@ import org.cyberpwn.spatial.util.Consume;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
@@ -39,7 +38,6 @@ public class MantleChunk {
     private final int x;
     @Getter
     private final int z;
-    private final AtomicIntegerArray flags;
     private final AtomicReferenceArray<Matter> sections;
 
     /**
@@ -50,13 +48,8 @@ public class MantleChunk {
      */
     public MantleChunk(int sectionHeight, int x, int z) {
         sections = new AtomicReferenceArray<>(sectionHeight);
-        flags = new AtomicIntegerArray(MantleFlag.values().length);
         this.x = x;
         this.z = z;
-
-        for(int i = 0; i < flags.length(); i++) {
-            flags.set(i, 0);
-        }
     }
 
     /**
@@ -75,30 +68,11 @@ public class MantleChunk {
         this(sectionHeight, din.readByte(), din.readByte());
         int s = din.readByte();
 
-        for(int i = 0; i < flags.length(); i++) {
-            flags.set(i, din.readBoolean() ? 1 : 0);
-        }
-
         for(int i = 0; i < s; i++) {
             if(din.readBoolean()) {
                 sections.set(i, Matter.readDin(din));
             }
         }
-    }
-
-    public void flag(MantleFlag flag, boolean f) {
-        flags.set(flag.ordinal(), f ? 1 : 0);
-    }
-
-    public void raiseFlag(MantleFlag flag, Runnable r) {
-        if(!isFlagged(flag)) {
-            flag(flag, true);
-            r.run();
-        }
-    }
-
-    public boolean isFlagged(MantleFlag flag) {
-        return flags.get(flag.ordinal()) == 1;
     }
 
     /**
@@ -172,10 +146,6 @@ public class MantleChunk {
         dos.writeByte(x);
         dos.writeByte(z);
         dos.writeByte(sections.length());
-
-        for(int i = 0; i < flags.length(); i++) {
-            dos.writeBoolean(flags.get(i) == 1);
-        }
 
         for(int i = 0; i < sections.length(); i++) {
             trimSlice(i);

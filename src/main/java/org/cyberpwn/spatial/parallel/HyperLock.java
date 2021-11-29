@@ -24,6 +24,7 @@ import org.cyberpwn.spatial.util.CompressedNumbers;
 import org.cyberpwn.spatial.util.Run;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -35,6 +36,19 @@ public class HyperLock {
 
     public HyperLock() {
         this(1024, false);
+    }
+
+    public void clear()
+    {
+        for(Long i : new HashSet<>(locks.keySet()))
+        {
+            if(locks.get(i).isLocked())
+            {
+                continue;
+            }
+
+            locks.remove(i);
+        }
     }
 
     public HyperLock(int capacity) {

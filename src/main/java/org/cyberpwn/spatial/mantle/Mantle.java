@@ -48,7 +48,7 @@ public class Mantle {
     private final int worldHeight;
     private final Map<Long, Long> lastUse;
     @Getter
-    private final Map<Long, TectonicPlate> loadedRegions;
+    private final Map<Long, MantleRegion> loadedRegions;
     private final HyperLock hyperLock;
     private final Set<Long> unload;
     private final AtomicBoolean closed;
@@ -69,11 +69,28 @@ public class Mantle {
         this.dataFolder = dataFolder;
         this.worldHeight = worldHeight;
         this.io = new AtomicBoolean(false);
-        dataFolder.mkdirs();
         unload = new HashSet<>();
         loadedRegions = new HashMap<>();
         lastUse = new HashMap<>();
         ioBurst = MultiBurst.burst;
+    }
+
+    public void clear()
+    {
+        loadedRegions.clear();
+        lastUse.clear();
+        unload.clear();
+        hyperLock.clear();
+
+        if(dataFolder.exists() && dataFolder.isDirectory())
+        {
+            for(File i : dataFolder.listFiles())
+            {
+                i.delete();
+            }
+        }
+
+        dataFolder.delete();
     }
 
     /**
@@ -121,87 +138,8 @@ public class Mantle {
         return CompressedNumbers.i2(x, z);
     }
 
-    /**
-     * Raise a flag if it is lowered currently, If the flag was raised, execute the runnable
-     *
-     * @param x
-     *     the chunk x
-     * @param z
-     *     the chunk z
-     * @param flag
-     *     the flag to raise
-     * @param r
-     *     the runnable to fire if the flag is now raised (and was previously lowered)
-     */
-    public void raiseFlag(int x, int z, MantleFlag flag, Runnable r) {
-        if(!hasFlag(x, z, flag)) {
-            flag(x, z, flag, true);
-            r.run();
-        }
-    }
-
-    /**
-     * Obtain a cached writer which only contains cached chunks.
-     * This avoids locking on regions when writing to lots of chunks
-     *
-     * @param x
-     *     the x chunk
-     * @param z
-     *     the z chunk
-     * @param radius
-     *     the radius chunks
-     * @return the writer
-     */
-    public MantleWriter write(int x, int z, int radius) {
-        return new MantleWriter(this, x, z, radius);
-    }
-
-    /**
-     * Writer but without limits!
-     *
-     * @return the writer
-     */
-    public MantleWriter write() {
-        return new MantleWriter(this);
-    }
-
-    /**
-     * Lower a flag if it is raised. If the flag was lowered (meaning it was previously raised), execute the runnable
-     *
-     * @param x
-     *     the chunk x
-     * @param z
-     *     the chunk z
-     * @param flag
-     *     the flag to lower
-     * @param r
-     *     the runnable that is fired if the flag was raised but is now lowered
-     */
-    public void lowerFlag(int x, int z, MantleFlag flag, Runnable r) {
-        if(hasFlag(x, z, flag)) {
-            flag(x, z, flag, false);
-            r.run();
-        }
-    }
-
     public MantleChunk getChunk(int x, int z) {
         return get(x >> 5, z >> 5).getOrCreate(x & 31, z & 31);
-    }
-
-    /**
-     * Flag or unflag a chunk
-     *
-     * @param x
-     *     the chunk x
-     * @param z
-     *     the chunk z
-     * @param flag
-     *     the flag
-     * @param flagged
-     *     should it be set to flagged or not
-     */
-    public void flag(int x, int z, MantleFlag flag, boolean flagged) {
-        get(x >> 5, z >> 5).getOrCreate(x & 31, z & 31).flag(flag, flagged);
     }
 
     public void deleteChunk(int x, int z) {
@@ -242,25 +180,6 @@ public class Mantle {
         }
 
         get(x >> 5, z >> 5).getOrCreate(x & 31, z & 31).iterate(type, iterator);
-    }
-
-    /**
-     * Does this chunk have a flag on it?
-     *
-     * @param x
-     *     the x
-     * @param z
-     *     the z
-     * @param flag
-     *     the flag to test
-     * @return true if it's flagged
-     */
-    public boolean hasFlag(int x, int z, MantleFlag flag) {
-        if(!hasTectonicPlate(x >> 5, z >> 5)) {
-            return false;
-        }
-
-        return get(x >> 5, z >> 5).getOrCreate(x & 31, z & 31).isFlagged(flag);
     }
 
     /**
@@ -377,23 +296,7 @@ public class Mantle {
         }
 
         closed.set(true);
-        BurstExecutor b = ioBurst.burst(loadedRegions.size());
-        for(Long i : loadedRegions.keySet()) {
-            b.queue(() -> {
-                try {
-                    loadedRegions.get(i).write(fileForRegion(dataFolder, i));
-                } catch(IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-
-        try {
-            b.complete();
-        } catch(Throwable e) {
-            e.printStackTrace();
-        }
-
+        saveAll();
         loadedRegions.clear();
     }
 
@@ -422,7 +325,7 @@ public class Mantle {
 
         for(Long i : unload) {
             hyperLock.withLong(i, () -> {
-                TectonicPlate m = loadedRegions.remove(i);
+                MantleRegion m = loadedRegions.remove(i);
                 lastUse.remove(i);
 
                 try {
@@ -445,7 +348,7 @@ public class Mantle {
      *     the region z
      * @return the future of a tectonic plate.
      */
-    private TectonicPlate get(int x, int z) {
+    private MantleRegion get(int x, int z) {
         if(io.get()) {
             try {
                 return getSafe(x, z).get();
@@ -456,7 +359,7 @@ public class Mantle {
             }
         }
 
-        TectonicPlate p = loadedRegions.get(key(x, z));
+        MantleRegion p = loadedRegions.get(key(x, z));
 
         if(p != null) {
             return p;
@@ -481,9 +384,9 @@ public class Mantle {
      *     the region z
      * @return the future of a tectonic plate.
      */
-    private Future<TectonicPlate> getSafe(int x, int z) {
+    private Future<MantleRegion> getSafe(int x, int z) {
         Long k = key(x, z);
-        TectonicPlate p = loadedRegions.get(k);
+        MantleRegion p = loadedRegions.get(k);
 
         if(p != null) {
             lastUse.put(k, System.currentTimeMillis());
@@ -492,7 +395,7 @@ public class Mantle {
 
         return ioBurst.completeValue(() -> hyperLock.withResult(x, z, () -> {
             lastUse.put(k, System.currentTimeMillis());
-            TectonicPlate region = loadedRegions.get(k);
+            MantleRegion region = loadedRegions.get(k);
 
             if(region != null) {
                 return region;
@@ -502,25 +405,49 @@ public class Mantle {
 
             if(file.exists()) {
                 try {
-                    region = TectonicPlate.read(worldHeight, file);
+                    region = MantleRegion.read(worldHeight, file);
                     loadedRegions.put(k, region);
                 } catch(Throwable e) {
                     e.printStackTrace();
-                    region = new TectonicPlate(worldHeight, x, z);
+                    region = new MantleRegion(worldHeight, x, z);
                     loadedRegions.put(k, region);
                 }
 
                 return region;
             }
 
-            region = new TectonicPlate(worldHeight, x, z);
+            region = new MantleRegion(worldHeight, x, z);
             loadedRegions.put(k, region);
             return region;
         }));
     }
 
     public void saveAll() {
+        if(loadedRegions.isEmpty())
+        {
+            return;
+        }
 
+        BurstExecutor b = ioBurst.burst(loadedRegions.size());
+        for(Long i : loadedRegions.keySet()) {
+            b.queue(() -> {
+                try {
+                    if(!dataFolder.exists())
+                    {
+                        dataFolder.mkdirs();
+                    }
+                    loadedRegions.get(i).write(fileForRegion(dataFolder, i));
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        try {
+            b.complete();
+        } catch(Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     public int getWorldHeight() {
