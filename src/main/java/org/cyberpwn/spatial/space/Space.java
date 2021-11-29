@@ -17,6 +17,7 @@
  */
 
 package org.cyberpwn.spatial.space;
+
 import com.google.common.collect.ImmutableList;
 import org.cyberpwn.spatial.mantle.Mantle;
 import org.cyberpwn.spatial.util.Consume;
@@ -31,34 +32,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Space
-{
+public class Space {
     private final AtomicBoolean closed;
     private final File folder;
     private final Map<Integer, Mantle> mantles;
 
-    public Space(File folder)
-    {
+    public Space(File folder) {
         this.closed = new AtomicBoolean();
         this.folder = folder;
         this.mantles = new HashMap<>();
     }
 
-    public void clear()
-    {
+    public void clear() {
         mantles.values().forEach(Mantle::clear);
         mantles.clear();
 
-        if(folder.exists() && folder.isDirectory())
-        {
-            for(File i : folder.listFiles())
-            {
-                if(i.isDirectory())
-                {
-                    for(File j : i.listFiles())
-                    {
-                        if(!j.delete())
-                        {
+        if(folder.exists() && folder.isDirectory()) {
+            for(File i : folder.listFiles()) {
+                if(i.isDirectory()) {
+                    for(File j : i.listFiles()) {
+                        if(!j.delete()) {
                             j.deleteOnExit();
                         }
                     }
@@ -71,8 +64,7 @@ public class Space
         }
     }
 
-    public <T> void iterateRegion(int x, int y, int z, int radius, Class<T> type, Consume.Four<Integer, Integer, Integer, T> iterator)
-    {
+    public <T> void iterateRegion(int x, int y, int z, int radius, Class<T> type, Consume.Four<Integer, Integer, Integer, T> iterator) {
         iterateRegion(x - radius, y - radius, z - radius, x + radius, y + radius, z + radius, type, iterator);
     }
 
@@ -84,16 +76,12 @@ public class Space
         int zi = Math.min(z1, z2);
         int za = Math.max(z1, z2);
 
-        for(int i = xi; i < xa; i++)
-        {
-            for(int j = yi; j < ya; j++)
-            {
-                for(int k = zi; k < za; k++)
-                {
+        for(int i = xi; i < xa; i++) {
+            for(int j = yi; j < ya; j++) {
+                for(int k = zi; k < za; k++) {
                     T t = get(i, j, k, type);
 
-                    if(t != null)
-                    {
+                    if(t != null) {
                         iterator.accept(i, j, k, t);
                     }
                 }
@@ -117,10 +105,8 @@ public class Space
             i.trim(idleDuration);
         }
 
-        for(Integer i : new HashSet<>(mantles.keySet()))
-        {
-            if(mantles.get(i).getLoadedRegions().isEmpty())
-            {
+        for(Integer i : new HashSet<>(mantles.keySet())) {
+            if(mantles.get(i).getLoadedRegions().isEmpty()) {
                 mantles.remove(i).close();
             }
         }
@@ -146,15 +132,12 @@ public class Space
      *     the type assumed from the provided class
      * @return the returned result (or null) if it doesnt exist
      */
-    public <T> T get(int x, int y, int z, Class<T> type)
-    {
-        if(closed.get())
-        {
+    public <T> T get(int x, int y, int z, Class<T> type) {
+        if(closed.get()) {
             throw new RuntimeException("Closed!");
         }
 
-        if(!hasMantle(y))
-        {
+        if(!hasMantle(y)) {
             return null;
         }
 
@@ -181,18 +164,15 @@ public class Space
      *     the type of data (generic method)
      */
     public <T> void set(int x, int y, int z, T t) {
-        if(closed.get())
-        {
+        if(closed.get()) {
             throw new RuntimeException("Closed!");
         }
 
         getMantle(y).set(x, y & 511, z, t);
     }
 
-    public void close()
-    {
-        if(closed.get())
-        {
+    public void close() {
+        if(closed.get()) {
             return;
         }
 
@@ -201,10 +181,8 @@ public class Space
         mantles.clear();
     }
 
-    public void saveAll()
-    {
-        if(closed.get())
-        {
+    public void saveAll() {
+        if(closed.get()) {
             throw new RuntimeException("Closed!");
         }
 
@@ -212,33 +190,30 @@ public class Space
     }
 
     public <T> void remove(int x, int y, int z, Class<T> t) {
-        if(closed.get())
-        {
+        if(closed.get()) {
             throw new RuntimeException("Closed!");
         }
 
-        if(!hasMantle(y))
-        {
+        if(!hasMantle(y)) {
             return;
         }
 
         getMantle(y).remove(x, y & 511, z, t);
     }
 
-    public boolean hasMantle(int y)
-    {
+    public boolean hasMantle(int y) {
         return mantles.containsKey(y >> 9) || new File(folder, Integer.toHexString(y >> 9)).exists();
     }
 
     /**
      * Get the mantle responsible for the given Y level
-     * @param y the raw y level you need to access
+     *
+     * @param y
+     *     the raw y level you need to access
      * @return the mantle responsible for storing that y location
      */
-    private Mantle getMantle(int y)
-    {
-        if(closed.get())
-        {
+    private Mantle getMantle(int y) {
+        if(closed.get()) {
             throw new RuntimeException("Closed!");
         }
 

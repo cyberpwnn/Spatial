@@ -62,7 +62,7 @@ public class SpatialMatter implements Matter {
     }
 
     public static void registerSliceType(MatterSlice<?> s) {
-        registerSliceType(s.getType(), s);
+        slicers.put(s.getType(), s);
     }
 
     private static void registerSliceType(Class<?> type, MatterSlice<?> s) {

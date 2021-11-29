@@ -75,17 +75,14 @@ public class Mantle {
         ioBurst = MultiBurst.burst;
     }
 
-    public void clear()
-    {
+    public void clear() {
         loadedRegions.clear();
         lastUse.clear();
         unload.clear();
         hyperLock.clear();
 
-        if(dataFolder.exists() && dataFolder.isDirectory())
-        {
-            for(File i : dataFolder.listFiles())
-            {
+        if(dataFolder.exists() && dataFolder.isDirectory()) {
+            for(File i : dataFolder.listFiles()) {
                 i.delete();
             }
         }
@@ -423,8 +420,7 @@ public class Mantle {
     }
 
     public void saveAll() {
-        if(loadedRegions.isEmpty())
-        {
+        if(loadedRegions.isEmpty()) {
             return;
         }
 
@@ -432,8 +428,7 @@ public class Mantle {
         for(Long i : loadedRegions.keySet()) {
             b.queue(() -> {
                 try {
-                    if(!dataFolder.exists())
-                    {
+                    if(!dataFolder.exists()) {
                         dataFolder.mkdirs();
                     }
                     loadedRegions.get(i).write(fileForRegion(dataFolder, i));

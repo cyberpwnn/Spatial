@@ -38,12 +38,9 @@ public class HyperLock {
         this(1024, false);
     }
 
-    public void clear()
-    {
-        for(Long i : new HashSet<>(locks.keySet()))
-        {
-            if(locks.get(i).isLocked())
-            {
+    public void clear() {
+        for(Long i : new HashSet<>(locks.keySet())) {
+            if(locks.get(i).isLocked()) {
                 continue;
             }
 

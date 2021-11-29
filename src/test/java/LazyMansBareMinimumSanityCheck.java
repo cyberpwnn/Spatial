@@ -3,6 +3,8 @@ import org.cyberpwn.spatial.container.NodeWritable;
 import org.cyberpwn.spatial.mantle.Mantle;
 import org.cyberpwn.spatial.matter.Matter;
 import org.cyberpwn.spatial.matter.SpatialMatter;
+import org.cyberpwn.spatial.parallel.PrecisionStopwatch;
+import org.cyberpwn.spatial.space.Space;
 import org.junit.jupiter.api.Test;
 
 import java.io.DataInputStream;
